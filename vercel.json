@@ -8,12 +8,7 @@
   ],
   "routes": [
     {
-      "src": "/api-docs/swagger.json",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/api-docs",
+      "src": "/",
       "dest": "/src/server.js",
       "methods": ["GET"]
     },
@@ -28,13 +23,23 @@
       "methods": ["GET"]
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/src/server.js"
-    },
-    {
-      "src": "/",
+      "src": "/api-docs/swagger.json",
       "dest": "/src/server.js",
       "methods": ["GET"]
+    },
+    {
+      "src": "/api-docs-simple",
+      "dest": "/src/server.js",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/api-docs",
+      "dest": "/src/server.js",
+      "methods": ["GET"]
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/src/server.js"
     },
     {
       "src": "/(.*)",
