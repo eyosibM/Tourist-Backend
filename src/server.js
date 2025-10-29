@@ -315,6 +315,48 @@ app.get('/health/detailed', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: Welcome message for the API
+ *     tags: [General]
+ *     responses:
+ *       200:
+ *         description: Welcome message
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Welcome to Tourlicity API Backend
+ *                 version:
+ *                   type: string
+ *                   example: 1.0.0
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                 documentation:
+ *                   type: string
+ *                   example: /api-docs
+ *                 health:
+ *                   type: string
+ *                   example: /health
+ */
+// Root welcome route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Welcome to Tourlicity API Backend',
+    version: require('../package.json').version,
+    timestamp: new Date().toISOString(),
+    documentation: '/api-docs',
+    health: '/health',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Swagger API Documentation
 const { swaggerUi, specs } = require('./config/swagger');
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
