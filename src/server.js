@@ -347,6 +347,7 @@ app.get('/health/detailed', async (req, res) => {
  */
 // Root welcome route
 app.get('/', (req, res) => {
+  console.log('Root route accessed:', req.method, req.path);
   res.json({
     message: 'Welcome to Tourlicity API Backend',
     version: require('../package.json').version,
@@ -570,9 +571,14 @@ app.post('/admin/reconnect-db', async (req, res) => {
   }
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// 404 handler - only for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Global error handler
