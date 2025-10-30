@@ -345,17 +345,33 @@ app.get('/health/detailed', async (req, res) => {
  *                   type: string
  *                   example: /health
  */
-// Root welcome route
+// Serve static files from public directory
+app.use(express.static('public'));
+
+// Root welcome route - API response
 app.get('/', (req, res) => {
   console.log('Root route accessed:', req.method, req.path);
-  res.json({
-    message: 'Welcome to Tourlicity API Backend',
-    version: require('../package.json').version,
-    timestamp: new Date().toISOString(),
-    documentation: '/api-docs',
-    health: '/health',
-    environment: process.env.NODE_ENV || 'development'
-  });
+  
+  // Check if request accepts JSON
+  if (req.accepts('json') && !req.accepts('html')) {
+    return res.json({
+      message: 'Welcome to Tourlicity API Backend',
+      version: require('../package.json').version,
+      timestamp: new Date().toISOString(),
+      documentation: '/api-docs-simple',
+      health: '/health',
+      environment: process.env.NODE_ENV || 'development',
+      endpoints: {
+        health: '/health',
+        documentation: '/api-docs-simple',
+        swagger: '/api-docs',
+        api: '/api/*'
+      }
+    });
+  }
+  
+  // For browser requests, serve the HTML file
+  res.sendFile(require('path').join(__dirname, '../public/index.html'));
 });
 
 // Swagger API Documentation
@@ -485,9 +501,19 @@ app.get('/api-docs-simple', (req, res) => {
   res.send(html);
 });
 
-// Swagger UI with CDN assets for Vercel compatibility
+// Swagger UI with better error handling
 app.use('/api-docs', swaggerUi.serve);
-app.get('/api-docs', swaggerUi.setup(specs, swaggerUiOptions));
+app.get('/api-docs', (req, res, next) => {
+  try {
+    swaggerUi.setup(specs, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Tourlicity API Documentation'
+    })(req, res, next);
+  } catch (error) {
+    console.error('Swagger UI error:', error);
+    res.redirect('/api-docs-simple');
+  }
+});
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));

@@ -8,56 +8,11 @@
   ],
   "routes": [
     {
-      "src": "/",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/health",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/health/detailed",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/api-docs/swagger.json",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/api-docs-simple",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/api-docs",
-      "dest": "/src/server.js",
-      "methods": ["GET"]
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/src/server.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/src/server.js"
     }
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "headers": [
-    {
-      "source": "/api-docs/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    }
-  ]
+  }
 }
