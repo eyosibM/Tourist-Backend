@@ -345,34 +345,18 @@ app.get('/health/detailed', async (req, res) => {
  *                   type: string
  *                   example: /health
  */
+// Test route to verify routing works
+app.get('/test-route', (req, res) => {
+  res.json({
+    message: 'Test route working',
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method
+  });
+});
+
 // Serve static files from public directory
 app.use(express.static('public'));
-
-// Root welcome route - API response
-app.get('/', (req, res) => {
-  console.log('Root route accessed:', req.method, req.path);
-  
-  // Check if request accepts JSON
-  if (req.accepts('json') && !req.accepts('html')) {
-    return res.json({
-      message: 'Welcome to Tourlicity API Backend',
-      version: require('../package.json').version,
-      timestamp: new Date().toISOString(),
-      documentation: '/api-docs-simple',
-      health: '/health',
-      environment: process.env.NODE_ENV || 'development',
-      endpoints: {
-        health: '/health',
-        documentation: '/api-docs-simple',
-        swagger: '/api-docs',
-        api: '/api/*'
-      }
-    });
-  }
-  
-  // For browser requests, serve the HTML file
-  res.sendFile(require('path').join(__dirname, '../public/index.html'));
-});
 
 // Swagger API Documentation
 const { swaggerUi, specs, swaggerUiOptions } = require('./config/swagger');
@@ -513,6 +497,20 @@ app.get('/api-docs', (req, res, next) => {
     console.error('Swagger UI error:', error);
     res.redirect('/api-docs-simple');
   }
+});
+
+// Root route - MUST be first to avoid conflicts
+app.get('/', (req, res) => {
+  console.log('🚀 ROOT ROUTE HIT:', req.method, req.path);
+  res.status(200).json({
+    message: 'Welcome to Tourlicity API Backend',
+    version: require('../package.json').version,
+    timestamp: new Date().toISOString(),
+    status: 'ONLINE',
+    documentation: '/api-docs-simple',
+    health: '/health',
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // API Routes
