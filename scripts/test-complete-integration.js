@@ -75,9 +75,9 @@ async function testDeployedFixes() {
     },
     {
       name: 'API Documentation',
-      path: '/api-docs-simple',
+      path: '/api-docs/',
       expectedStatus: 200,
-      expectedContent: 'API Documentation'
+      expectedContent: 'swagger-ui'
     }
   ];
   
@@ -232,7 +232,7 @@ async function testPerformanceImprovements() {
     const requests = [
       makeRequest(`${LOCAL_URL}/health`),
       makeRequest(`${LOCAL_URL}/`),
-      makeRequest(`${LOCAL_URL}/api-docs-simple`)
+      makeRequest(`${LOCAL_URL}/api-docs/`)
     ];
     
     const responses = await Promise.all(requests);

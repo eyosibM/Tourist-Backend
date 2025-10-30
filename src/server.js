@@ -367,135 +367,25 @@ app.get('/api-docs/swagger.json', (req, res) => {
   res.send(specs);
 });
 
-// Alternative simple API documentation route for Vercel compatibility
+// Redirect simple docs to main Swagger UI
 app.get('/api-docs-simple', (req, res) => {
-  const html = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Tourlicity API Documentation</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-        .header { background: #1f2937; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
-        .endpoint { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
-        .method { display: inline-block; padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; margin-right: 10px; }
-        .get { background: #28a745; }
-        .post { background: #007bff; }
-        .put { background: #ffc107; color: black; }
-        .delete { background: #dc3545; }
-        .json { background: #f1f1f1; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>🚀 Tourlicity API Documentation</h1>
-        <p>Enterprise Tour Management Backend API</p>
-        <p><strong>Version:</strong> ${require('../package.json').version}</p>
-        <p><strong>Base URL:</strong> ${req.protocol}://${req.get('host')}</p>
-    </div>
-
-    <h2>📋 Quick Links</h2>
-    <ul>
-        <li><a href="/health">Health Check</a></li>
-        <li><a href="/api-docs/swagger.json">OpenAPI Spec (JSON)</a></li>
-        <li><a href="https://github.com/eyosibM/Tourist-Backend">GitHub Repository</a></li>
-    </ul>
-
-    <h2>🔑 Authentication</h2>
-    <p>Most endpoints require JWT authentication. Include the token in the Authorization header:</p>
-    <div class="json">Authorization: Bearer &lt;your-jwt-token&gt;</div>
-
-    <h2>📡 Core Endpoints</h2>
-    
-    <div class="endpoint">
-        <span class="method get">GET</span><strong>/</strong>
-        <p>Welcome message and API information</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method get">GET</span><strong>/health</strong>
-        <p>Basic health check with service status</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method post">POST</span><strong>/api/auth/register</strong>
-        <p>User registration</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method post">POST</span><strong>/api/auth/login</strong>
-        <p>User login</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method get">GET</span><strong>/api/users/profile</strong>
-        <p>Get user profile (requires auth)</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method get">GET</span><strong>/api/custom-tours</strong>
-        <p>Get all custom tours</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method post">POST</span><strong>/api/custom-tours</strong>
-        <p>Create new custom tour (requires auth)</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method get">GET</span><strong>/api/tour-templates</strong>
-        <p>Get all tour templates</p>
-    </div>
-
-    <div class="endpoint">
-        <span class="method get">GET</span><strong>/api/notifications</strong>
-        <p>Get user notifications (requires auth)</p>
-    </div>
-
-    <h2>🎯 Features</h2>
-    <ul>
-        <li>✅ <strong>120+ API endpoints</strong> with comprehensive CRUD operations</li>
-        <li>✅ <strong>Enterprise Redis caching</strong> (50-90% performance improvement)</li>
-        <li>✅ <strong>Multi-channel notifications</strong> (Push, Email, SMS, In-app)</li>
-        <li>✅ <strong>Advanced file management</strong> (AWS S3 + YouTube integration)</li>
-        <li>✅ <strong>QR code generation</strong> and management</li>
-        <li>✅ <strong>Geospatial location services</strong></li>
-        <li>✅ <strong>Multi-dimensional review system</strong></li>
-        <li>✅ <strong>Advanced booking management</strong></li>
-        <li>✅ <strong>Real-time chat and messaging</strong></li>
-        <li>✅ <strong>Comprehensive health monitoring</strong></li>
-    </ul>
-
-    <h2>📊 Performance</h2>
-    <ul>
-        <li>🚀 <strong>50-90% faster response times</strong> with Redis caching</li>
-        <li>📈 <strong>60-80% reduction in database load</strong></li>
-        <li>⚡ <strong>2-3x increase in concurrent request capacity</strong></li>
-        <li>🛡️ <strong>Rate limiting and API abuse prevention</strong></li>
-    </ul>
-
-    <div style="margin-top: 40px; padding: 20px; background: #fff3cd; color: #856404; border-radius: 8px; border: 1px solid #ffeaa7;">
-        <h4>📋 Documentation Note</h4>
-        <p>Interactive Swagger UI is disabled on this deployment due to Vercel compatibility issues. 
-        This HTML documentation provides all the same information in a reliable format.</p>
-        <p><strong>Raw OpenAPI Spec:</strong> <a href="/api-docs/swagger.json" style="color: #856404;">/api-docs/swagger.json</a></p>
-    </div>
-
-    <p style="margin-top: 40px; text-align: center; color: #666;">
-        <strong>Tourlicity API</strong> - Enterprise Tour Management Platform
-    </p>
-</body>
-</html>`;
-  res.send(html);
+  console.log('Redirecting /api-docs-simple to /api-docs (Swagger UI)');
+  res.redirect('/api-docs');
 });
 
-// Swagger UI disabled due to Vercel MIME type issues - redirect to simple docs
-app.get('/api-docs', (req, res) => {
-  console.log('Redirecting /api-docs to /api-docs-simple due to Vercel compatibility');
-  res.redirect('/api-docs-simple');
-});
+// Swagger UI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  customSiteTitle: 'Tourlicity API Documentation',
+  customfavIcon: '/favicon.ico',
+  customCss: '.swagger-ui .topbar { display: none }',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true
+  }
+}));
 
 // Serve raw OpenAPI spec as JSON
 app.get('/api-docs/swagger.json', (req, res) => {
@@ -512,12 +402,12 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString(),
     status: 'ONLINE',
     platform: 'Express Server',
-    documentation: '/api-docs-simple',
+    documentation: '/api-docs',
     health: '/health',
     environment: process.env.NODE_ENV || 'development',
     endpoints: {
       health: '/health',
-      documentation: '/api-docs-simple',
+      documentation: '/api-docs',
       swagger: '/api-docs',
       api: '/api/*'
     }

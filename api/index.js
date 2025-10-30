@@ -28,12 +28,12 @@ module.exports = (req, res) => {
     timestamp: new Date().toISOString(),
     status: 'ONLINE',
     platform: 'Vercel Serverless',
-    documentation: '/api-docs-simple',
+    documentation: '/api-docs',
     health: '/health',
     environment: process.env.NODE_ENV || 'production',
     endpoints: {
       health: '/health',
-      documentation: '/api-docs-simple',
+      documentation: '/api-docs',
       swagger: '/api-docs',
       api: '/api/*'
     }

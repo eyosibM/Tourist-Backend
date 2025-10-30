@@ -34,9 +34,9 @@ const TESTS = [
   },
   {
     name: 'API Documentation Test',
-    path: '/api-docs-simple',
+    path: '/api-docs/',
     expectedStatus: 200,
-    expectedContent: 'API Documentation'
+    expectedContent: 'swagger-ui'
   },
   {
     name: 'API Endpoint Test',
