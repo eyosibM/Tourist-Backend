@@ -48,6 +48,14 @@
       "dest": "/src/server.js"
     }
   ],
+  "functions": {
+    "src/server.js": {
+      "maxDuration": 30
+    },
+    "api/index.js": {
+      "maxDuration": 10
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   }

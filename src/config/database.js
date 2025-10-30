@@ -16,14 +16,25 @@ const connectDB = async (retryCount = 0) => {
 
     console.log(`Attempting MongoDB connection (attempt ${retryCount + 1}/${maxRetries + 1})...`);
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 10000, // 10 second timeout
-      socketTimeoutMS: 20000, // Close sockets after 20s of inactivity
-      maxPoolSize: 3, // Very small pool size
-      minPoolSize: 1, // Minimum connections
-      maxIdleTimeMS: 5000, // Close connections after 5 seconds of inactivity
+    // Enhanced connection string validation
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+    
+    console.log('MongoDB URI format check:', mongoUri.substring(0, 20) + '...');
+    
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 15000, // Increased timeout for Vercel
+      socketTimeoutMS: 30000, // Longer socket timeout
+      connectTimeoutMS: 15000, // Connection timeout
+      maxPoolSize: 2, // Smaller pool for serverless
+      minPoolSize: 0, // No minimum for serverless
+      maxIdleTimeMS: 30000, // Longer idle time
       bufferCommands: false, // Disable mongoose buffering
-      heartbeatFrequencyMS: 10000, // Check connection every 10s
+      heartbeatFrequencyMS: 30000, // Less frequent heartbeat
+      retryWrites: true, // Enable retry writes
+      w: 'majority', // Write concern
     });
     
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
@@ -46,6 +57,12 @@ const connectDB = async (retryCount = 0) => {
     
   } catch (error) {
     console.error(`❌ Database connection attempt ${retryCount + 1} failed:`, error.message);
+    console.error('Error details:', {
+      name: error.name,
+      code: error.code,
+      codeName: error.codeName,
+      reason: error.reason
+    });
     
     if (retryCount < maxRetries) {
       console.log(`Retrying in ${retryDelay/1000} seconds...`);
@@ -53,15 +70,11 @@ const connectDB = async (retryCount = 0) => {
       return connectDB(retryCount + 1);
     } else {
       console.error('All MongoDB connection attempts failed');
-      console.log('Please ensure MongoDB is running on:', process.env.MONGODB_URI);
-      console.log('Try restarting MongoDB: net stop MongoDB && net start MongoDB (as admin)');
+      console.log('MongoDB URI (masked):', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'NOT SET');
       
-      // Don't exit in development, just log the error
-      if (process.env.NODE_ENV === 'production') {
-        process.exit(1);
-      } else {
-        console.log('Continuing in development mode without database...');
-      }
+      // In production, continue without database but log the issue
+      console.log('Continuing without database - API will have limited functionality');
+      return null;
     }
   }
 };
