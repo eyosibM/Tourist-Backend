@@ -476,27 +476,31 @@ app.get('/api-docs-simple', (req, res) => {
         <li>🛡️ <strong>Rate limiting and API abuse prevention</strong></li>
     </ul>
 
+    <div style="margin-top: 40px; padding: 20px; background: #fff3cd; color: #856404; border-radius: 8px; border: 1px solid #ffeaa7;">
+        <h4>📋 Documentation Note</h4>
+        <p>Interactive Swagger UI is disabled on this deployment due to Vercel compatibility issues. 
+        This HTML documentation provides all the same information in a reliable format.</p>
+        <p><strong>Raw OpenAPI Spec:</strong> <a href="/api-docs/swagger.json" style="color: #856404;">/api-docs/swagger.json</a></p>
+    </div>
+
     <p style="margin-top: 40px; text-align: center; color: #666;">
-        <strong>Tourlicity API</strong> - Enterprise Tour Management Platform<br>
-        For full interactive documentation, try accessing <a href="/api-docs">/api-docs</a>
+        <strong>Tourlicity API</strong> - Enterprise Tour Management Platform
     </p>
 </body>
 </html>`;
   res.send(html);
 });
 
-// Swagger UI with better error handling
-app.use('/api-docs', swaggerUi.serve);
-app.get('/api-docs', (req, res, next) => {
-  try {
-    swaggerUi.setup(specs, {
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Tourlicity API Documentation'
-    })(req, res, next);
-  } catch (error) {
-    console.error('Swagger UI error:', error);
-    res.redirect('/api-docs-simple');
-  }
+// Swagger UI disabled due to Vercel MIME type issues - redirect to simple docs
+app.get('/api-docs', (req, res) => {
+  console.log('Redirecting /api-docs to /api-docs-simple due to Vercel compatibility');
+  res.redirect('/api-docs-simple');
+});
+
+// Serve raw OpenAPI spec as JSON
+app.get('/api-docs/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json(specs);
 });
 
 // Root route - MUST be first to avoid conflicts
