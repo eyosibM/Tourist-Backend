@@ -503,17 +503,24 @@ app.get('/api-docs/swagger.json', (req, res) => {
   res.json(specs);
 });
 
-// Root route - MUST be first to avoid conflicts
+// Root route - for local development (Vercel uses api/index.js)
 app.get('/', (req, res) => {
-  console.log('🚀 ROOT ROUTE HIT:', req.method, req.path);
+  console.log('🚀 EXPRESS ROOT ROUTE HIT:', req.method, req.path);
   res.status(200).json({
     message: 'Welcome to Tourlicity API Backend',
     version: require('../package.json').version,
     timestamp: new Date().toISOString(),
     status: 'ONLINE',
+    platform: 'Express Server',
     documentation: '/api-docs-simple',
     health: '/health',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: {
+      health: '/health',
+      documentation: '/api-docs-simple',
+      swagger: '/api-docs',
+      api: '/api/*'
+    }
   });
 });
 
