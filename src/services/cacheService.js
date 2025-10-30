@@ -15,7 +15,8 @@ class CacheService {
       if (redisClient) {
         // Use existing Redis client from server
         this.client = redisClient;
-        this.isConnected = redisClient.isOpen;
+        this.isConnected = redisClient.isOpen || redisClient.isReady;
+        console.log('Cache service initialized with shared Redis client');
       } else {
         // Create new Redis client for caching
         this.client = redis.createClient({
@@ -47,9 +48,9 @@ class CacheService {
         });
 
         await this.client.connect();
+        console.log('Cache service initialized with new Redis client');
       }
 
-      console.log('Cache service initialized');
     } catch (error) {
       console.warn('Cache service initialization failed:', error.message);
       console.log('Continuing without cache - performance may be reduced');
@@ -302,5 +303,51 @@ class CacheService {
 
 // Create singleton instance
 const cacheService = new CacheService();
+
+// Auto-initialize if not already initialized
+const autoInitialize = async () => {
+  if (!cacheService.isConnected && process.env.REDIS_URL) {
+    try {
+      await cacheService.initialize();
+    } catch (error) {
+      console.warn('Auto-initialization of cache service failed:', error.message);
+    }
+  }
+};
+
+// Initialize on first use
+let initPromise = null;
+const ensureInitialized = async () => {
+  if (!initPromise) {
+    initPromise = autoInitialize();
+  }
+  await initPromise;
+};
+
+// Wrap methods to ensure initialization
+const originalGet = cacheService.get.bind(cacheService);
+const originalSet = cacheService.set.bind(cacheService);
+const originalDel = cacheService.del.bind(cacheService);
+const originalGetStats = cacheService.getStats.bind(cacheService);
+
+cacheService.get = async function(key) {
+  await ensureInitialized();
+  return originalGet(key);
+};
+
+cacheService.set = async function(key, value, ttl) {
+  await ensureInitialized();
+  return originalSet(key, value, ttl);
+};
+
+cacheService.del = async function(key) {
+  await ensureInitialized();
+  return originalDel(key);
+};
+
+cacheService.getStats = async function() {
+  await ensureInitialized();
+  return originalGetStats();
+};
 
 module.exports = cacheService;

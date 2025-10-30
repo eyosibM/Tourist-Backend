@@ -18,69 +18,77 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 
 // Create notification queues with error handling
 let emailQueue, pushQueue;
+let queuesEnabled = false;
 
-try {
-  emailQueue = new Queue('email notifications', {
-    redis: {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || undefined,
-      maxRetriesPerRequest: 3,
-      retryDelayOnFailover: 100,
-      lazyConnect: true
-    },
-    defaultJobOptions: {
-      removeOnComplete: 100, // Keep last 100 completed jobs
-      removeOnFail: 50,      // Keep last 50 failed jobs
-      attempts: 3,           // Retry failed jobs 3 times
-      backoff: {
-        type: 'exponential',
-        delay: 2000
+// Check if Redis is available before creating queues
+const initializeQueues = () => {
+  // Only initialize queues if Redis URL is properly configured and not localhost
+  if (!process.env.REDIS_URL || 
+      process.env.REDIS_URL === 'redis://localhost:6379' ||
+      process.env.REDIS_URL.includes('localhost') ||
+      process.env.REDIS_URL.includes('127.0.0.1')) {
+    console.log('Redis not configured for production - notification queues disabled');
+    console.log('Email and push notifications will be sent directly (slower but functional)');
+    queuesEnabled = false;
+    return;
+  }
+
+  try {
+    emailQueue = new Queue('email notifications', {
+      redis: process.env.REDIS_URL,
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 50,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000
+        }
       }
-    }
-  });
+    });
 
-  pushQueue = new Queue('push notifications', {
-    redis: {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || undefined,
-      maxRetriesPerRequest: 3,
-      retryDelayOnFailover: 100,
-      lazyConnect: true
-    },
-    defaultJobOptions: {
-      removeOnComplete: 100,
-      removeOnFail: 50,
-      attempts: 3,
-      backoff: {
-        type: 'exponential',
-        delay: 2000
+    pushQueue = new Queue('push notifications', {
+      redis: process.env.REDIS_URL,
+      defaultJobOptions: {
+        removeOnComplete: 100,
+        removeOnFail: 50,
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000
+        }
       }
-    }
-  });
+    });
 
-  // Handle queue errors
-  emailQueue.on('error', (error) => {
-    console.error('Email queue error:', error);
-  });
+    // Handle queue errors gracefully
+    emailQueue.on('error', (error) => {
+      console.warn('Email queue error (Redis unavailable):', error.message);
+    });
 
-  pushQueue.on('error', (error) => {
-    console.error('Push queue error:', error);
-  });
+    pushQueue.on('error', (error) => {
+      console.warn('Push queue error (Redis unavailable):', error.message);
+    });
 
-} catch (error) {
-  console.error('Failed to initialize notification queues:', error);
-  console.log('Notification queues will be disabled. Redis connection required.');
-}
+    queuesEnabled = true;
+    console.log('Notification queues initialized with Redis');
+
+  } catch (error) {
+    console.warn('Failed to initialize notification queues:', error.message);
+    console.log('Notifications will be sent directly without queuing');
+    queuesEnabled = false;
+  }
+};
+
+// Initialize queues
+initializeQueues();
 
 class NotificationQueueService {
   /**
    * Initialize queue processors
    */
   static initializeQueues() {
-    if (!emailQueue || !pushQueue) {
-      console.log('Queues not available - skipping initialization');
+    if (!queuesEnabled || !emailQueue || !pushQueue) {
+      console.log('Queues not available - notifications will be sent directly');
       return;
     }
     // Email queue processor
@@ -535,6 +543,38 @@ class NotificationQueueService {
       pushQueue.close()
     ]);
     console.log('Notification queues closed');
+  }
+
+  /**
+   * Check if queues are available
+   */
+  static isQueueAvailable() {
+    return queuesEnabled && emailQueue && pushQueue;
+  }
+
+  /**
+   * Add notification job (unified interface)
+   */
+  static async addNotificationJob(jobData) {
+    if (jobData.type === 'email') {
+      return await this.queueEmail(jobData.to, jobData.subject, jobData.message);
+    } else if (jobData.type === 'push') {
+      return await this.queuePushNotification(jobData.userId, jobData.title, jobData.body);
+    } else {
+      throw new Error(`Unknown notification type: ${jobData.type}`);
+    }
+  }
+
+  /**
+   * Get queue health status
+   */
+  static getQueueHealth() {
+    return {
+      enabled: queuesEnabled,
+      emailQueue: !!emailQueue,
+      pushQueue: !!pushQueue,
+      redisUrl: process.env.REDIS_URL ? 'configured' : 'not configured'
+    };
   }
 }
 

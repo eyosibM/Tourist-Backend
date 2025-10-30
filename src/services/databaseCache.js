@@ -203,6 +203,13 @@ class DatabaseCache {
   }
 
   /**
+   * Generate cache key (alias for generateQueryKey for backward compatibility)
+   */
+  generateCacheKey(model, query = {}, options = {}) {
+    return this.generateQueryKey(model, 'find', query, options);
+  }
+
+  /**
    * Create cached version of a Mongoose model
    */
   createCachedModel(model, options = {}) {
