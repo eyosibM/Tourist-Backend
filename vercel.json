@@ -1,19 +1,13 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "src/server.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/",
       "dest": "/api/index.js"
+    },
+    {
+      "src": "/debug",
+      "dest": "/api/debug.js"
     },
     {
       "src": "/api/(.*)",
@@ -44,10 +38,6 @@
       "dest": "/src/server.js"
     },
     {
-      "src": "/debug",
-      "dest": "/api/debug.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/src/server.js"
     }
@@ -57,6 +47,9 @@
       "maxDuration": 30
     },
     "api/index.js": {
+      "maxDuration": 10
+    },
+    "api/debug.js": {
       "maxDuration": 10
     }
   },
