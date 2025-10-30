@@ -44,6 +44,10 @@
       "dest": "/src/server.js"
     },
     {
+      "src": "/debug",
+      "dest": "/api/debug.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/src/server.js"
     }
