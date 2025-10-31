@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const PasswordUtils = require('../utils/passwordUtils');
 
 const userSchema = new mongoose.Schema({
   // Built-in fields
@@ -46,11 +47,69 @@ const userSchema = new mongoose.Schema({
 
   // Authentication fields
   google_id: String,
-  password: String, // For non-Google auth if needed
+  password: {
+    type: String,
+    required: function() {
+      return !this.google_id; // Required if not Google user
+    }
+  },
+
+  // Email verification fields
+  email_verified: {
+    type: Boolean,
+    default: false
+  },
+  email_verification_token: String,
+  email_verification_expires: Date,
+
+  // Password reset fields
+  password_reset_token: String,
+  password_reset_expires: Date,
+
+  // Security tracking fields
+  login_attempts: {
+    type: Number,
+    default: 0
+  },
+  account_locked_until: Date,
+  last_login: Date
 
 }, {
   timestamps: { createdAt: 'created_date', updatedAt: 'updated_date' }
 });
+
+// Password hashing middleware
+userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
+  
+  // Skip hashing if password is empty (for Google users)
+  if (!this.password) return next();
+  
+  try {
+    // Hash password using centralized password utilities
+    this.password = await PasswordUtils.hashPassword(this.password);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  if (!this.password) return false;
+  return PasswordUtils.comparePassword(candidatePassword, this.password);
+};
+
+// Method to validate password strength
+userSchema.methods.validatePasswordStrength = function(password) {
+  return PasswordUtils.validatePasswordStrength(password);
+};
+
+// Method to check if password needs rehashing
+userSchema.methods.needsPasswordRehashing = function() {
+  return PasswordUtils.needsRehashing(this.password);
+};
 
 // Virtual for full name
 userSchema.virtual('full_name').get(function () {

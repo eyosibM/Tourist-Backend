@@ -1,0 +1,57 @@
+# Node modules
+node_modules
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Test files
+tests/
+test/
+*.test.js
+*.spec.js
+
+# Development files
+.vscode/
+.idea/
+*.log
+
+# Temporary files
+temp/
+temp_docx/
+.snapshots/
+
+# Build artifacts
+dist/
+build/
+
+# Docker files
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Vercel
+.vercel/
+vercel.json
+
+# Scripts (keep only essential ones)
+scripts/test-*
+scripts/debug-*
+scripts/create-*
+scripts/check-*
+scripts/fix-*
+
+# Misc
+*.pyc
+.DS_Store
+Thumbs.db

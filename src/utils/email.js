@@ -290,6 +290,231 @@ const emailTemplates = {
       <p>This message was sent by your tour provider. Please check your tour details for any updates or instructions.</p>
       <p>Best regards,<br>Tourlicity Team</p>
     `
+  }),
+
+  // Authentication email templates
+  emailVerification: (userName, verificationToken) => ({
+    subject: 'Verify Your Email Address - Tourlicity',
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <h2 style="color: #007bff; text-align: center;">Welcome to Tourlicity!</h2>
+        <p>Dear ${userName},</p>
+        <p>Thank you for registering with Tourlicity. To complete your account setup and ensure the security of your account, please verify your email address.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL || 'https://tourlicity.com'}/verify-email?token=${verificationToken}" 
+             style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Verify Email Address
+          </a>
+        </div>
+        
+        <p>If the button above doesn't work, you can copy and paste the following link into your browser:</p>
+        <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 3px;">
+          ${process.env.FRONTEND_URL || 'https://tourlicity.com'}/verify-email?token=${verificationToken}
+        </p>
+        
+        <div style="background-color: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
+          <p style="margin: 0;"><strong>Important:</strong> This verification link will expire in 24 hours for security reasons.</p>
+        </div>
+        
+        <p>If you didn't create an account with Tourlicity, please ignore this email.</p>
+        <p>Best regards,<br>The Tourlicity Team</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666; text-align: center;">
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </div>
+    `
+  }),
+
+  passwordReset: (userName, resetToken) => ({
+    subject: 'Reset Your Password - Tourlicity',
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <h2 style="color: #dc3545; text-align: center;">Password Reset Request</h2>
+        <p>Dear ${userName},</p>
+        <p>We received a request to reset the password for your Tourlicity account. If you made this request, please click the button below to reset your password.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL || 'https://tourlicity.com'}/reset-password?token=${resetToken}" 
+             style="background-color: #dc3545; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Reset Password
+          </a>
+        </div>
+        
+        <p>If the button above doesn't work, you can copy and paste the following link into your browser:</p>
+        <p style="word-break: break-all; background-color: #f8f9fa; padding: 10px; border-radius: 3px;">
+          ${process.env.FRONTEND_URL || 'https://tourlicity.com'}/reset-password?token=${resetToken}
+        </p>
+        
+        <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #dc3545;">
+          <p style="margin: 0;"><strong>Security Notice:</strong> This password reset link will expire in 1 hour for your security.</p>
+        </div>
+        
+        <div style="background-color: #d1ecf1; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #17a2b8;">
+          <p style="margin: 0;"><strong>Didn't request this?</strong> If you didn't request a password reset, please ignore this email. Your password will remain unchanged.</p>
+        </div>
+        
+        <p>For your security, we recommend:</p>
+        <ul>
+          <li>Using a strong, unique password</li>
+          <li>Not sharing your password with anyone</li>
+          <li>Logging out of shared devices</li>
+        </ul>
+        
+        <p>Best regards,<br>The Tourlicity Team</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666; text-align: center;">
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </div>
+    `
+  }),
+
+  passwordResetConfirmation: (userName) => ({
+    subject: 'Password Successfully Reset - Tourlicity',
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <h2 style="color: #28a745; text-align: center;">Password Reset Successful</h2>
+        <p>Dear ${userName},</p>
+        <p>Your password has been successfully reset for your Tourlicity account.</p>
+        
+        <div style="background-color: #d4edda; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #28a745;">
+          <p style="margin: 0;"><strong>Confirmation:</strong> Your password was changed on ${new Date().toLocaleString()}.</p>
+        </div>
+        
+        <p>You can now log in to your account using your new password. For your security, all existing login sessions have been terminated.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL || 'https://tourlicity.com'}/login" 
+             style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Log In Now
+          </a>
+        </div>
+        
+        <div style="background-color: #fff3cd; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #ffc107;">
+          <p style="margin: 0;"><strong>Security Alert:</strong> If you didn't reset your password, please contact our support team immediately.</p>
+        </div>
+        
+        <p>To keep your account secure:</p>
+        <ul>
+          <li>Don't share your password with anyone</li>
+          <li>Use a unique password for your Tourlicity account</li>
+          <li>Log out when using shared or public devices</li>
+          <li>Contact us if you notice any suspicious activity</li>
+        </ul>
+        
+        <p>Best regards,<br>The Tourlicity Team</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666; text-align: center;">
+          This is an automated message. Please do not reply to this email.
+        </p>
+      </div>
+    `
+  }),
+
+  accountLocked: (userName, lockDuration) => ({
+    subject: 'Account Temporarily Locked - Tourlicity',
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <h2 style="color: #dc3545; text-align: center;">Account Security Alert</h2>
+        <p>Dear ${userName},</p>
+        <p>Your Tourlicity account has been temporarily locked due to multiple failed login attempts.</p>
+        
+        <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #dc3545;">
+          <p style="margin: 0;"><strong>Account Status:</strong> Temporarily locked for ${lockDuration} minutes for your security.</p>
+        </div>
+        
+        <p><strong>What happened?</strong></p>
+        <p>We detected multiple unsuccessful login attempts on your account. To protect your account from unauthorized access, we've temporarily locked it.</p>
+        
+        <p><strong>What you can do:</strong></p>
+        <ul>
+          <li>Wait ${lockDuration} minutes for the lock to automatically expire</li>
+          <li>Try logging in again after the lock period</li>
+          <li>If you forgot your password, use the "Forgot Password" option</li>
+          <li>Contact support if you believe this was an error</li>
+        </ul>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL || 'https://tourlicity.com'}/forgot-password" 
+             style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            Reset Password
+          </a>
+        </div>
+        
+        <div style="background-color: #d1ecf1; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #17a2b8;">
+          <p style="margin: 0;"><strong>Security Tip:</strong> If this wasn't you, someone may be trying to access your account. Consider changing your password once the lock expires.</p>
+        </div>
+        
+        <p>Your account security is important to us. This temporary lock helps protect your personal information and tour bookings.</p>
+        
+        <p>Best regards,<br>The Tourlicity Team</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666; text-align: center;">
+          This is an automated security message. Please do not reply to this email.
+        </p>
+      </div>
+    `
+  }),
+
+  loginAlert: (userName, ipAddress, userAgent, location) => ({
+    subject: 'New Login to Your Account - Tourlicity',
+    html: `
+      <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
+        <h2 style="color: #17a2b8; text-align: center;">Login Notification</h2>
+        <p>Dear ${userName},</p>
+        <p>We're writing to let you know that there was a successful login to your Tourlicity account.</p>
+        
+        <div style="background-color: #f8f9fa; padding: 15px; margin: 20px 0; border-radius: 5px; border: 1px solid #dee2e6;">
+          <h3 style="margin-top: 0; color: #495057;">Login Details:</h3>
+          <ul style="margin-bottom: 0;">
+            <li><strong>Date & Time:</strong> ${new Date().toLocaleString()}</li>
+            <li><strong>IP Address:</strong> ${ipAddress}</li>
+            <li><strong>Device/Browser:</strong> ${userAgent}</li>
+            ${location ? `<li><strong>Location:</strong> ${location}</li>` : ''}
+          </ul>
+        </div>
+        
+        <div style="background-color: #d4edda; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #28a745;">
+          <p style="margin: 0;"><strong>Was this you?</strong> If you recognize this login, no action is needed.</p>
+        </div>
+        
+        <div style="background-color: #f8d7da; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #dc3545;">
+          <p style="margin: 0;"><strong>Suspicious activity?</strong> If you don't recognize this login, please secure your account immediately.</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL || 'https://tourlicity.com'}/forgot-password" 
+             style="background-color: #dc3545; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; margin-right: 10px;">
+            Change Password
+          </a>
+          <a href="${process.env.FRONTEND_URL || 'https://tourlicity.com'}/profile" 
+             style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            View Account
+          </a>
+        </div>
+        
+        <p><strong>To keep your account secure:</strong></p>
+        <ul>
+          <li>Use a strong, unique password</li>
+          <li>Don't share your login credentials</li>
+          <li>Log out from shared or public devices</li>
+          <li>Enable two-factor authentication if available</li>
+        </ul>
+        
+        <p>Best regards,<br>The Tourlicity Team</p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="font-size: 12px; color: #666; text-align: center;">
+          This is an automated security message. Please do not reply to this email.
+        </p>
+      </div>
+    `
   })
 };
 
@@ -314,4 +539,37 @@ const sendEmail = async (to, template, ...args) => {
   }
 };
 
-module.exports = { sendEmail, emailTemplates };
+// Authentication-specific email helper functions
+const authEmailService = {
+  // Send email verification
+  async sendEmailVerification(userEmail, userName, verificationToken) {
+    return await sendEmail(userEmail, 'emailVerification', userName, verificationToken);
+  },
+
+  // Send password reset email
+  async sendPasswordReset(userEmail, userName, resetToken) {
+    return await sendEmail(userEmail, 'passwordReset', userName, resetToken);
+  },
+
+  // Send password reset confirmation
+  async sendPasswordResetConfirmation(userEmail, userName) {
+    return await sendEmail(userEmail, 'passwordResetConfirmation', userName);
+  },
+
+  // Send account locked notification
+  async sendAccountLocked(userEmail, userName, lockDuration = 30) {
+    return await sendEmail(userEmail, 'accountLocked', userName, lockDuration);
+  },
+
+  // Send login alert notification
+  async sendLoginAlert(userEmail, userName, ipAddress, userAgent, location = null) {
+    return await sendEmail(userEmail, 'loginAlert', userName, ipAddress, userAgent, location);
+  },
+
+  // Resend email verification (generates new token)
+  async resendEmailVerification(userEmail, userName, newVerificationToken) {
+    return await sendEmail(userEmail, 'emailVerification', userName, newVerificationToken);
+  }
+};
+
+module.exports = { sendEmail, emailTemplates, authEmailService };

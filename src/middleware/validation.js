@@ -1,4 +1,16 @@
 const Joi = require('joi');
+const PasswordUtils = require('../utils/passwordUtils');
+
+// Custom Joi validation for password strength
+const passwordValidation = Joi.string().custom((value, helpers) => {
+  const validation = PasswordUtils.validatePasswordStrength(value);
+  if (!validation.isValid) {
+    return helpers.error('password.strength', { errors: validation.errors });
+  }
+  return value;
+}).messages({
+  'password.strength': 'Password does not meet security requirements: {{#errors}}'
+});
 
 // Validation schemas
 const schemas = {
@@ -349,6 +361,59 @@ const schemas = {
     product_overview: Joi.string(),
     mission_statement: Joi.string(),
     vision: Joi.string()
+  }),
+
+  // Authentication schemas for email/password authentication
+  authRegistration: Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required'
+    }),
+    password: passwordValidation.required().messages({
+      'any.required': 'Password is required'
+    }),
+    first_name: Joi.string().min(1).max(50).required().messages({
+      'string.min': 'First name must be at least 1 character long',
+      'string.max': 'First name must be no more than 50 characters long',
+      'any.required': 'First name is required'
+    }),
+    last_name: Joi.string().min(1).max(50).required().messages({
+      'string.min': 'Last name must be at least 1 character long',
+      'string.max': 'Last name must be no more than 50 characters long',
+      'any.required': 'Last name is required'
+    })
+  }),
+
+  authLogin: Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required'
+    }),
+    password: Joi.string().required().messages({
+      'any.required': 'Password is required'
+    })
+  }),
+
+  passwordResetRequest: Joi.object({
+    email: Joi.string().email().required().messages({
+      'string.email': 'Please provide a valid email address',
+      'any.required': 'Email is required'
+    })
+  }),
+
+  passwordResetCompletion: Joi.object({
+    token: Joi.string().required().messages({
+      'any.required': 'Reset token is required'
+    }),
+    new_password: passwordValidation.required().messages({
+      'any.required': 'New password is required'
+    })
+  }),
+
+  emailVerification: Joi.object({
+    token: Joi.string().required().messages({
+      'any.required': 'Verification token is required'
+    })
   })
 };
 

@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: tourlicity-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-strongpassword123}
+      MONGO_INITDB_DATABASE: tourlicity
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongodb/init:/docker-entrypoint-initdb.d
+    networks:
+      - tourlicity-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis Cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: tourlicity-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redispassword123} --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tourlicity-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Tourlicity API
+  api:
+    build: .
+    container_name: tourlicity-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Database
+      MONGODB_URI: mongodb://admin:${MONGO_ROOT_PASSWORD:-strongpassword123}@mongodb:27017/tourlicity?authSource=admin
+      
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redispassword123}@redis:6379
+      
+      # Core Configuration
+      NODE_ENV: production
+      PORT: 5000
+      BASE_URL: http://localhost:5000
+      
+      # JWT Secrets
+      JWT_SECRET: ${JWT_SECRET:-93204f06ebb21cd06b85879bb32c260ace1840d6ddb8960677c0e12f305c134981b0ba54c72698c4da7c175bdd794ab12e6ea24508e6ba58b759ecd2e224ab88}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-a1e3c0acab60d25e00563dab20bc2144dc6109f54faf884f6ac09d238969656fe2abb7a7a9fd2874c90efe49023da2a131f321be9a3357fc6aa3984f01bd8ea6}
+      JWT_ACCESS_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 7d
+      
+      # Google OAuth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-your-google-client-id}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-your-google-client-secret}
+      
+      # AWS S3
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-your-aws-access-key-id}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-your-aws-secret-access-key}
+      AWS_REGION: ${AWS_REGION:-eu-north-1}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-tourlicity-storage}
+      
+      # Email Configuration
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-your-email@gmail.com}
+      EMAIL_PASS: ${EMAIL_PASS:-your-app-password}
+      EMAIL_FROM: ${EMAIL_FROM:-your-email@gmail.com}
+      
+      # Push Notifications
+      VAPID_EMAIL: ${VAPID_EMAIL:-admin@tourlicity.com}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-BFfQY0TpoX99lz7OGes-A-FCAAbg50YTBRDHX4L4cmEhdFIfRy7J77nnYaGwNaOvR4oP5-TZOL2f-Cnr_Im-Y10}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-6Legpp4DTpG3Fsur7cMSWrq53yia7V0yYnOika1e0gc}
+      
+      # Frontend
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000,http://localhost:3001,http://localhost:5173}
+      
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - tourlicity-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: tourlicity-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    networks:
+      - tourlicity-network
+    depends_on:
+      - api
+    profiles:
+      - production
+
+volumes:
+  mongodb_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  tourlicity-network:
+    driver: bridge

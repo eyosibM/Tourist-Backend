@@ -39,7 +39,7 @@ const options = {
 
 const specs = swaggerJsdoc(options);
 
-// Swagger UI options for Vercel compatibility
+// Swagger UI options - HTTP compatible
 const swaggerUiOptions = {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Tourlicity API Documentation',
@@ -51,13 +51,8 @@ const swaggerUiOptions = {
             'SwaggerUIStandalonePreset'
         ],
         layout: 'StandaloneLayout'
-    },
-    // Use CDN assets for better compatibility with Vercel
-    customCssUrl: 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-    customJs: [
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js'
-    ]
+    }
+    // Removed external CDN links to avoid mixed content issues
 };
 
 module.exports = {

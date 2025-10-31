@@ -4,8 +4,14 @@
 
 This is the REST API for the Tourlicity tour management platform. The API provides endpoints for managing users, providers, tour templates, custom tours, registrations, calendar entries, and more.
 
-## Base URL
+## Base URLs
 
+### Production
+```
+https://tourlicity.duckdns.org/api
+```
+
+### Development
 ```
 http://localhost:5000/api
 ```

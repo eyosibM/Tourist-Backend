@@ -58,8 +58,25 @@ const buildPaginationResponse = (data, total, page, limit) => {
 // Sanitize user data for response
 const sanitizeUser = (user) => {
   const userObj = user.toObject ? user.toObject() : user;
+  
+  // Remove sensitive fields
   delete userObj.password;
-  delete userObj.google_id;
+  delete userObj.email_verification_token;
+  delete userObj.email_verification_expires;
+  delete userObj.password_reset_token;
+  delete userObj.password_reset_expires;
+  delete userObj.login_attempts;
+  delete userObj.account_locked_until;
+  
+  // Keep email verification status for client-side handling
+  // Keep google_id existence as boolean for client logic
+  if (userObj.google_id) {
+    userObj.has_google_auth = true;
+    delete userObj.google_id;
+  } else {
+    userObj.has_google_auth = false;
+  }
+  
   return userObj;
 };
 
