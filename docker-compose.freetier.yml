@@ -62,12 +62,13 @@ services:
 
   # Tourlicity API - Optimized for free tier
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.production
     container_name: tourlicity-api
     restart: unless-stopped
     ports:
       - "5000:5000"
-      - "80:5000"  # Also expose on port 80 for convenience
     environment:
       # Database
       MONGODB_URI: mongodb://admin:${MONGO_ROOT_PASSWORD:-strongpassword123}@mongodb:27017/tourlicity?authSource=admin&retryWrites=true&w=majority
@@ -137,6 +138,28 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+  # Nginx Reverse Proxy for DuckDNS domain
+  nginx:
+    image: nginx:alpine
+    container_name: tourlicity-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    networks:
+      - tourlicity-network
+    depends_on:
+      - api
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+        reservations:
+          memory: 30M
 
 volumes:
   mongodb_data:
