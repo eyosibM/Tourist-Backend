@@ -29,13 +29,14 @@ const schemas = {
   }),
 
   userUpdate: Joi.object({
+    email: Joi.string().email(),
     first_name: Joi.string().min(1).max(50),
     last_name: Joi.string().min(1).max(50),
-    country: Joi.string().max(100),
+    country: Joi.string().max(100).optional(),
     passport_number: Joi.string().max(50).allow('', null).optional(),
-    date_of_birth: Joi.date(),
-    gender: Joi.string().valid('male', 'female', 'other'),
-    phone_number: Joi.string().max(20),
+    date_of_birth: Joi.date().optional(),
+    gender: Joi.string().valid('male', 'female', 'other').optional(),
+    phone_number: Joi.string().max(20).optional(),
     profile_picture: Joi.string().uri().allow(null, ''),
     user_type: Joi.string().valid('system_admin', 'provider_admin', 'tourist'),
     provider_id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/)
@@ -146,6 +147,14 @@ const schemas = {
       'transportation', 'accommodation', 'entertainment',
       'shopping', 'educational', 'religious', 'nature', 'other'
     ).required(),
+    features_media: Joi.object({
+      url: Joi.string().uri().allow(null, ''),
+      type: Joi.string().valid('image', 'video').allow(null, ''),
+      video_id: Joi.string().allow(null, ''),
+      duration: Joi.number().allow(null),
+      embed_url: Joi.string().uri().allow(null, '')
+    }).allow(null),
+    features_image: Joi.string().uri().allow(null, ''),
     is_active: Joi.boolean()
   }),
 

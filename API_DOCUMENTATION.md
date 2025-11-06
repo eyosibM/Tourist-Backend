@@ -12,7 +12,7 @@ This is the REST API for the Tourlicity tour management platform. The API provid
 - **Automatic HTTP→HTTPS Redirect**: All HTTP requests redirect to HTTPS
 
 ### 🚀 Production Deployment
-- **Live URL**: https://tourlicity.duckdns.org
+- **Live URL**: https://api.tourlicity.com
 - **Server**: AWS EC2 (t3.micro) with Docker containers
 - **Database**: MongoDB Atlas (cloud) + Local MongoDB (backup)
 - **Cache**: Redis Cloud + Local Redis (backup)
