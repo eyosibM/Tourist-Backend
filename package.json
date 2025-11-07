@@ -1,6 +1,6 @@
 {
   "name": "tourlicity-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Tourlicity tour management platform backend API",
   "main": "src/server.js",
   "scripts": {

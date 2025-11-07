@@ -18,9 +18,20 @@ const generateCustomTourQRCode = async (req, res) => {
     }
 
     // Check if user has permission (provider admin or system admin)
-    if (req.user.user_type === 'provider_admin' && 
-        tour.provider_id._id.toString() !== req.user.provider_id.toString()) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (req.user.user_type === 'provider_admin') {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      const tourProviderId = tour.provider_id?._id?.toString() || tour.provider_id?.toString();
+      
+      console.log('🔍 QR Code Permission Check:', {
+        userType: req.user.user_type,
+        userProviderId,
+        tourProviderId,
+        match: userProviderId === tourProviderId
+      });
+      
+      if (userProviderId !== tourProviderId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     // Generate main QR code
@@ -112,9 +123,13 @@ const regenerateCustomTourQRCode = async (req, res) => {
     }
 
     // Check permissions
-    if (req.user.user_type === 'provider_admin' && 
-        tour.provider_id._id.toString() !== req.user.provider_id.toString()) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (req.user.user_type === 'provider_admin') {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      const tourProviderId = tour.provider_id?._id?.toString() || tour.provider_id?.toString();
+      
+      if (userProviderId !== tourProviderId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     // Regenerate QR codes
@@ -179,9 +194,13 @@ const shareQRCode = async (req, res) => {
     }
 
     // Check permissions
-    if (req.user.user_type === 'provider_admin' && 
-        tour.provider_id._id.toString() !== req.user.provider_id.toString()) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (req.user.user_type === 'provider_admin') {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      const tourProviderId = tour.provider_id?._id?.toString() || tour.provider_id?.toString();
+      
+      if (userProviderId !== tourProviderId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     const senderName = `${req.user.first_name} ${req.user.last_name}`;
@@ -232,9 +251,13 @@ const getQRCodeInfo = async (req, res) => {
     }
 
     // Check permissions for custom tours
-    if (type === 'custom' && req.user.user_type === 'provider_admin' && 
-        tour.provider_id._id.toString() !== req.user.provider_id.toString()) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (type === 'custom' && req.user.user_type === 'provider_admin') {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      const tourProviderId = tour.provider_id?._id?.toString() || tour.provider_id?.toString();
+      
+      if (userProviderId !== tourProviderId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     const qrInfo = {
@@ -277,9 +300,13 @@ const deleteQRCode = async (req, res) => {
     }
 
     // Check permissions for custom tours
-    if (type === 'custom' && req.user.user_type === 'provider_admin' && 
-        tour.provider_id._id.toString() !== req.user.provider_id.toString()) {
-      return res.status(403).json({ error: 'Access denied' });
+    if (type === 'custom' && req.user.user_type === 'provider_admin') {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      const tourProviderId = tour.provider_id?._id?.toString() || tour.provider_id?.toString();
+      
+      if (userProviderId !== tourProviderId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     // Delete QR codes from S3
@@ -308,11 +335,50 @@ const deleteQRCode = async (req, res) => {
   }
 };
 
+// Download QR code (proxy to avoid CORS issues)
+const downloadQRCode = async (req, res) => {
+  try {
+    const { url } = req.query;
+
+    if (!url) {
+      return res.status(400).json({ error: 'URL parameter is required' });
+    }
+
+    // Verify the URL is from our S3 bucket
+    const bucketName = process.env.S3_BUCKET_NAME;
+    if (!url.includes(bucketName)) {
+      return res.status(403).json({ error: 'Invalid URL' });
+    }
+
+    // Fetch the image from S3
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      return res.status(404).json({ error: 'QR code not found' });
+    }
+
+    // Get the image buffer
+    const buffer = await response.arrayBuffer();
+    
+    // Set appropriate headers
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', 'attachment; filename="qr-code.png"');
+    res.setHeader('Content-Length', buffer.byteLength);
+    
+    // Send the image
+    res.send(Buffer.from(buffer));
+  } catch (error) {
+    console.error('Download QR code error:', error);
+    res.status(500).json({ error: 'Failed to download QR code' });
+  }
+};
+
 module.exports = {
   generateCustomTourQRCode,
   generateTemplateQRCode,
   regenerateCustomTourQRCode,
   shareQRCode,
   getQRCodeInfo,
-  deleteQRCode
+  deleteQRCode,
+  downloadQRCode
 };

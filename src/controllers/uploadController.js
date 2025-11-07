@@ -92,29 +92,63 @@ const uploadMultipleTourImages = async (req, res) => {
 // Upload general file
 const uploadGeneralFile = async (req, res) => {
   try {
+    console.log('📤 General file upload request received');
+    console.log('File:', req.file ? {
+      fieldname: req.file.fieldname,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    } : 'No file');
+    
     if (!req.file) {
+      console.error('❌ No file provided in request');
       return res.status(400).json({ error: 'No file provided' });
     }
 
     const { category = 'other' } = req.body;
-    const fileUrl = req.file.location || req.file.path;
-    const fileName = req.file.originalname;
-    const fileSize = req.file.size;
-    const mimeType = req.file.mimetype;
+
+    console.log(`Processing ${req.file.mimetype} upload: ${req.file.originalname} (${req.file.size} bytes)`);
+
+    // Validate file before processing
+    const validation = MediaUploadService.validateMediaFile(req.file);
+    if (!validation.isValid) {
+      return res.status(400).json({ 
+        error: 'File validation failed', 
+        details: validation.errors 
+      });
+    }
+
+    // Upload file to S3 using MediaUploadService
+    const uploadResult = await MediaUploadService.uploadMedia(
+      req.file,
+      {
+        title: req.file.originalname,
+        description: category,
+        folder: 'general-uploads'
+      }
+    );
+
+    console.log(`✅ Upload successful: ${uploadResult.type} - ${uploadResult.url}`);
 
     res.json({
       message: 'File uploaded successfully',
-      file_url: fileUrl, // Frontend expects file_url
-      fileUrl, // Keep for backward compatibility
-      fileName,
-      fileSize,
-      mimeType,
+      file_url: uploadResult.url, // Frontend expects file_url
+      fileUrl: uploadResult.url, // Keep for backward compatibility
+      fileName: req.file.originalname,
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
       category,
-      uploadedAt: new Date().toISOString()
+      media: uploadResult, // Include full media object
+      uploadedAt: uploadResult.uploadedAt
     });
   } catch (error) {
-    console.error('General file upload error:', error);
-    res.status(500).json({ error: 'Failed to upload file' });
+    console.error('❌ General file upload error:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to upload file',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 

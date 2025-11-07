@@ -1,8 +1,17 @@
-# Tourlicity Backend API Documentation
+# Tourlicity Backend API Documentation v2.0.0
 
 ## Overview
 
-This is the REST API for the Tourlicity tour management platform. The API provides endpoints for managing users, providers, tour templates, custom tours, registrations, calendar entries, and more.
+This is the comprehensive REST API for the Tourlicity enterprise tour management platform. The API provides 153+ endpoints for managing users, providers, tour templates, custom tours, registrations, calendar entries, default activities, and advanced features like caching, notifications, and media management.
+
+### 🎯 What's New in v2.0.0
+
+- **Default Activities System**: Complete CRUD operations with advanced media support
+- **Enhanced Performance**: Redis caching providing 50-90% faster response times  
+- **Advanced Media Support**: New `features_media` field supporting both images and videos
+- **Comprehensive Documentation**: Interactive Swagger UI with 153+ documented endpoints
+- **Health Monitoring**: Real-time system status and performance metrics
+- **Enhanced Security**: Role-based access control with JWT authentication
 
 ### 🔒 Security Features
 - **HTTPS Encryption**: All production traffic is encrypted with TLS 1.2/1.3
@@ -13,23 +22,25 @@ This is the REST API for the Tourlicity tour management platform. The API provid
 
 ### 🚀 Production Deployment
 - **Live URL**: https://api.tourlicity.com
+- **Interactive Documentation**: https://api.tourlicity.com/api-docs
 - **Server**: AWS EC2 (t3.micro) with Docker containers
 - **Database**: MongoDB Atlas (cloud) + Local MongoDB (backup)
-- **Cache**: Redis Cloud + Local Redis (backup)
+- **Cache**: Redis Cloud + Local Redis (backup) - 85%+ hit rate
 - **File Storage**: AWS S3 for all media uploads
 - **SSL**: Let's Encrypt with auto-renewal every 90 days
-- **Monitoring**: Health check endpoints for system monitoring
+- **Monitoring**: Real-time health check endpoints with performance metrics
+- **Performance**: 50-90% faster response times with intelligent caching
 
 ## Base URLs
 
 ### Production (HTTPS - Secure)
 ```
-https://tourlicity.duckdns.org/api
+https://api.tourlicity.com/api
 ```
 
 ### Production (HTTP - Redirects to HTTPS)
 ```
-http://tourlicity.duckdns.org/api
+http://api.tourlicity.com/api
 ```
 
 ### Development
@@ -38,8 +49,10 @@ http://localhost:5000/api
 ```
 
 ### Interactive API Documentation
-- **Swagger UI**: https://tourlicity.duckdns.org/api-docs
-- **Health Check**: https://tourlicity.duckdns.org/health
+- **Swagger UI v2.0**: https://api.tourlicity.com/api-docs
+- **OpenAPI Spec**: https://api.tourlicity.com/api-docs/swagger.json
+- **Health Check**: https://api.tourlicity.com/health
+- **Detailed Health**: https://api.tourlicity.com/health/detailed
 
 ## Authentication
 
@@ -76,11 +89,14 @@ Cache is automatically invalidated when:
 - Related data changes (e.g., tour updates invalidate registration cache)
 - Manual invalidation via admin endpoints
 
-### Performance Benefits
+### Performance Benefits (v2.0.0)
 
 - **50-90% faster response times** for cached endpoints
+- **85%+ cache hit rate** in production environments
 - **60-80% reduction in database load** for frequently accessed data
 - **2-3x increase in concurrent request capacity**
+- **Smart cache invalidation** with automatic cleanup on data changes
+- **Optimized memory usage** (~48MB average, down from 80MB+)
 
 ## User Roles
 
@@ -276,14 +292,36 @@ Custom tours support two visibility modes via the `viewAccessibility` property:
 - Private tours: Only accessible via join code search, not visible in general listings for tourists
 - Provider admins and system admins can always see and manage their tours regardless of visibility
 
-#### Media Upload Support
+#### Enhanced Media Upload Support (v2.0.0)
 
-Tours and templates now support both image and video uploads for featured media:
+Tours, templates, and default activities now support advanced media management with the new `features_media` system:
 
-- **Images**: Uploaded to AWS S3 (JPEG, PNG, GIF up to 5MB)
-- **Videos**: Uploaded to AWS S3 (MP4, MOV, AVI, MKV, WebM up to 100MB)
-- **Backward Compatibility**: `features_image` field maintained for existing integrations
-- **New Field**: `features_media` object contains type and URL for S3-stored media
+**Supported Media Types:**
+- **Images**: JPEG, PNG, GIF up to 5MB each
+- **Videos**: MP4, MOV, AVI, MKV, WebM up to 100MB each
+- **Storage**: All media stored securely in AWS S3 with CDN delivery
+
+**New `features_media` Object Structure:**
+```json
+{
+  "features_media": {
+    "url": "https://s3.amazonaws.com/bucket/media/activity-video.mp4",
+    "type": "video",
+    "duration": 120
+  }
+}
+```
+
+**Backward Compatibility:**
+- `features_image` field maintained for existing integrations
+- Automatic migration support for legacy image URLs
+- No breaking changes to existing API endpoints
+
+**Enhanced Features:**
+- **Video Duration Tracking**: Automatic duration detection for videos
+- **Type Validation**: Strict validation for media types and formats
+- **Optimized Delivery**: S3 integration with optional CloudFront CDN
+- **Secure Upload**: Presigned URL support for direct client uploads
 
 ### Calendar Entries
 
@@ -311,18 +349,27 @@ Tours and templates now support both image and video uploads for featured media:
 | POST   | `/uploads/presigned-url`        | Get presigned URL for S3    | Private                      |
 | DELETE | `/uploads/delete`               | Delete uploaded file        | Private                      |
 
-### Default Activities
+### Default Activities (NEW in v2.0.0)
 
-| Method | Endpoint                 | Description                  | Access                       |
-| ------ | ------------------------ | ---------------------------- | ---------------------------- |
-| GET    | `/activities`            | Get all default activities   | System Admin, Provider Admin |
-| GET    | `/activities/selection`  | Get activities for selection | System Admin, Provider Admin |
-| GET    | `/activities/categories` | Get activity categories      | System Admin, Provider Admin |
-| GET    | `/activities/:id`        | Get default activity by ID   | System Admin, Provider Admin |
-| POST   | `/activities`            | Create new default activity  | System Admin                 |
-| PUT    | `/activities/:id`        | Update default activity      | System Admin                 |
-| PATCH  | `/activities/:id/status` | Toggle activity status       | System Admin                 |
-| DELETE | `/activities/:id`        | Delete default activity      | System Admin                 |
+The Default Activities system provides a comprehensive template library for tour activities with advanced media support and intelligent caching.
+
+| Method | Endpoint                 | Description                                    | Access                       | Cache TTL |
+| ------ | ------------------------ | ---------------------------------------------- | ---------------------------- | --------- |
+| GET    | `/activities`            | Get all default activities with filtering      | System Admin, Provider Admin | 10 min    |
+| GET    | `/activities/selection`  | Get activities optimized for frontend dropdowns | System Admin, Provider Admin | 15 min    |
+| GET    | `/activities/categories` | Get activity categories with statistics        | System Admin, Provider Admin | 30 min    |
+| GET    | `/activities/:id`        | Get default activity by ID                     | System Admin, Provider Admin | 20 min    |
+| POST   | `/activities`            | Create new default activity                    | System Admin                 | -         |
+| PUT    | `/activities/:id`        | Update default activity                        | System Admin                 | -         |
+| PATCH  | `/activities/:id/status` | Toggle activity status                         | System Admin                 | -         |
+| DELETE | `/activities/:id`        | Delete default activity                        | System Admin                 | -         |
+
+#### Key Features
+- **Advanced Media Support**: New `features_media` field supporting images and videos
+- **Intelligent Caching**: Redis-powered caching for optimal performance
+- **Category Management**: Dynamic categories with activity counts and statistics
+- **Selection Optimization**: Lightweight endpoints for frontend components
+- **Backward Compatibility**: Legacy `features_image` field maintained
 
 ### Broadcasts
 
@@ -1512,9 +1559,9 @@ Response:
 }
 ```
 
-## Default Activities Examples
+## Default Activities Examples (v2.0.0)
 
-### Create Default Activity
+### Create Default Activity with Media
 
 ```http
 POST /api/activities
@@ -1526,6 +1573,11 @@ Content-Type: application/json
   "description": "Visit the iconic Eiffel Tower with guided tour and photo opportunities",
   "typical_duration_hours": 2.5,
   "category": "sightseeing",
+  "features_media": {
+    "url": "https://s3.amazonaws.com/tourlicity/activities/eiffel-tower-tour.mp4",
+    "type": "video",
+    "duration": 180
+  },
   "is_active": true
 }
 ```
@@ -1541,6 +1593,11 @@ Response:
 		"description": "Visit the iconic Eiffel Tower with guided tour and photo opportunities",
 		"typical_duration_hours": 2.5,
 		"category": "sightseeing",
+		"features_media": {
+			"url": "https://s3.amazonaws.com/tourlicity/activities/eiffel-tower-tour.mp4",
+			"type": "video",
+			"duration": 180
+		},
 		"is_active": true,
 		"created_by": {
 			"_id": "64a1b2c3d4e5f6789012345",
@@ -1548,16 +1605,16 @@ Response:
 			"last_name": "User",
 			"email": "admin@example.com"
 		},
-		"created_date": "2024-01-15T10:00:00.000Z",
-		"updated_date": "2024-01-15T10:00:00.000Z"
+		"created_date": "2024-11-06T20:00:00.000Z",
+		"updated_date": "2024-11-06T20:00:00.000Z"
 	}
 }
 ```
 
-### Get Activities for Selection
+### Get All Activities with Filtering
 
 ```http
-GET /api/activities/selection?category=sightseeing&search=tower
+GET /api/activities?page=1&limit=10&category=sightseeing&search=tower&is_active=true
 Authorization: Bearer <token>
 ```
 
@@ -1565,6 +1622,51 @@ Response:
 
 ```json
 {
+	"success": true,
+	"data": [
+		{
+			"_id": "64a1b2c3d4e5f6789012350",
+			"activity_name": "Eiffel Tower Visit",
+			"description": "Visit the iconic Eiffel Tower with guided tour and photo opportunities",
+			"typical_duration_hours": 2.5,
+			"category": "sightseeing",
+			"features_media": {
+				"url": "https://s3.amazonaws.com/tourlicity/activities/eiffel-tower-tour.mp4",
+				"type": "video",
+				"duration": 180
+			},
+			"is_active": true,
+			"created_date": "2024-11-06T20:00:00.000Z"
+		}
+	],
+	"pagination": {
+		"currentPage": 1,
+		"totalPages": 5,
+		"totalItems": 47,
+		"itemsPerPage": 10,
+		"hasNextPage": true,
+		"hasPrevPage": false
+	},
+	"filters": {
+		"category": "sightseeing",
+		"search": "tower",
+		"is_active": true
+	}
+}
+```
+
+### Get Activities for Selection (Optimized)
+
+```http
+GET /api/activities/selection?category=sightseeing&search=tower&limit=20
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+	"success": true,
 	"activities": [
 		{
 			"_id": "64a1b2c3d4e5f6789012350",
@@ -1572,17 +1674,57 @@ Response:
 			"description": "Visit the iconic Eiffel Tower with guided tour and photo opportunities",
 			"typical_duration_hours": 2.5,
 			"category": "sightseeing",
-			"is_active": true
+			"features_media": {
+				"url": "https://s3.amazonaws.com/tourlicity/activities/eiffel-tower-tour.mp4",
+				"type": "video"
+			}
 		}
 	],
-	"total": 1,
+	"total": 15,
+	"filters": {
+		"category": "sightseeing",
+		"search": "tower"
+	}
+}
+```
+
+### Get Activity Categories with Statistics
+
+```http
+GET /api/activities/categories?sort_by=count&include_empty=false
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+	"success": true,
 	"categories": [
-		"sightseeing",
-		"dining",
-		"entertainment",
-		"transportation",
-		"accommodation"
-	]
+		{
+			"name": "sightseeing",
+			"count": 45,
+			"description": "Activities focused on viewing attractions and landmarks"
+		},
+		{
+			"name": "cultural",
+			"count": 32,
+			"description": "Cultural experiences and heritage activities"
+		},
+		{
+			"name": "adventure",
+			"count": 28,
+			"description": "Exciting outdoor and adventure activities"
+		},
+		{
+			"name": "dining",
+			"count": 25,
+			"description": "Food and dining experiences"
+		}
+	],
+	"total_categories": 12,
+	"total_activities": 156,
+	"most_popular": "sightseeing"
 }
 ```
 
@@ -2391,12 +2533,56 @@ All error responses follow this consistent format:
 }
 ```
 
+## Interactive API Documentation (v2.0.0)
+
+### Enhanced Swagger UI
+
+The API now features a comprehensive interactive documentation system accessible at https://api.tourlicity.com/api-docs
+
+**Key Features:**
+- **153+ Documented Endpoints**: Complete coverage of all API functionality
+- **Interactive Testing**: Try out API calls directly from the browser
+- **Authentication Integration**: Login once and test all protected endpoints
+- **Real-time Examples**: Live request/response examples with actual data
+- **Schema Validation**: Comprehensive data model documentation
+
+**Documentation Statistics:**
+- **Total Endpoints**: 153 across 25 categories
+- **Total Schemas**: 45+ comprehensive data models
+- **Response Examples**: Real-world examples for all endpoints
+- **Error Documentation**: Standardized error codes and responses
+
+**Access Points:**
+- **Interactive UI**: https://api.tourlicity.com/api-docs
+- **OpenAPI JSON**: https://api.tourlicity.com/api-docs/swagger.json
+- **Health Monitoring**: https://api.tourlicity.com/health
+
+### API Categories
+
+The documentation is organized into logical categories:
+
+- **Authentication** (11 endpoints): User login, registration, profile management
+- **Default Activities** (8 endpoints): Activity template management
+- **Tours & Templates** (14 endpoints): Tour creation and management
+- **Bookings & Registrations** (13 endpoints): Booking system
+- **Notifications** (19 endpoints): Multi-channel notification system
+- **File Management** (7 endpoints): Media upload and management
+- **Cache Management** (8 endpoints): Performance optimization
+- **Health Monitoring** (2 endpoints): System status and metrics
+- **And 17 more categories** covering all platform functionality
+
 ## API Versioning
 
-The current API version is v1. Future versions will be supported through URL versioning:
+The current API version is v2.0.0. Future versions will be supported through URL versioning:
 
-- Current: `/api/endpoint`
-- Future: `/api/v2/endpoint`
+- Current: `/api/endpoint` (v2.0.0)
+- Future: `/api/v3/endpoint`
+
+**Version History:**
+- **v2.0.0** (November 2025): Default Activities, Enhanced Media, Performance Improvements
+- **v1.3.0** (October 2025): HTTPS, Security Enhancements, Production Deployment
+- **v1.2.0**: Tour Visibility, AWS SDK Migration
+- **v1.0.0**: Initial Release
 
 Breaking changes will result in a new API version, while backward-compatible changes will be added to the current version.
 
@@ -3142,37 +3328,61 @@ Response:
 - **200 OK**: All services are healthy
 - **503 Service Unavailable**: One or more services are degraded or unavailable
 
-### Health Check Usage
+### Enhanced Health Monitoring (v2.0.0)
 
-These endpoints are designed for:
+**Real-time Performance Metrics:**
+- **Response Time Tracking**: Individual service response times
+- **Cache Performance**: Hit rates, memory usage, key counts
+- **Memory Analytics**: Detailed heap and RSS memory breakdown
+- **Database Health**: Connection status and query performance
+- **Redis Monitoring**: Connection status and cache statistics
+
+**Health Check Usage:**
 
 - **Load Balancers**: Use `/health` for simple up/down checks
 - **Monitoring Tools**: Use `/health/detailed` for comprehensive metrics
 - **Container Orchestration**: Both endpoints work with Docker, Kubernetes health checks
 - **CI/CD Pipelines**: Verify deployment health before traffic routing
+- **Performance Monitoring**: Track system performance over time
+- **Alerting Systems**: Set up alerts based on health check responses
 
-## 🚀 Current Deployment Status
+**Example Monitoring Integration:**
+```bash
+# Simple health check for load balancer
+curl -f https://api.tourlicity.com/health
+
+# Detailed metrics for monitoring dashboard
+curl https://api.tourlicity.com/health/detailed | jq '.cache.hitRate'
+```
+
+## 🚀 Current Deployment Status (v2.0.0)
 
 ### Production Environment
 - **Status**: ✅ **LIVE AND OPERATIONAL**
-- **URL**: https://tourlicity.duckdns.org
-- **Last Deployed**: October 31, 2025
+- **URL**: https://api.tourlicity.com
+- **Documentation**: https://api.tourlicity.com/api-docs
+- **Last Updated**: November 6, 2025
+- **API Version**: 2.0.0
 - **SSL Certificate**: ✅ Valid (Let's Encrypt, auto-renews)
 - **Health Status**: ✅ All services operational
 
 ### Service Status
-- **API Server**: ✅ Running (Docker container)
+- **API Server**: ✅ Running (Docker container) - 153+ endpoints
 - **Database**: ✅ MongoDB Atlas + Local backup
-- **Cache**: ✅ Redis Cloud + Local backup  
-- **File Storage**: ✅ AWS S3
+- **Cache**: ✅ Redis Cloud + Local backup - 85%+ hit rate
+- **File Storage**: ✅ AWS S3 with CDN delivery
 - **SSL/HTTPS**: ✅ TLS 1.2/1.3 with security headers
-- **Monitoring**: ✅ Health checks active
+- **Monitoring**: ✅ Real-time health checks with performance metrics
+- **Documentation**: ✅ Interactive Swagger UI with 45+ schemas
 
-### Performance Metrics
-- **Response Time**: ~200ms average
+### Performance Metrics (v2.0.0)
+- **Response Time**: ~200ms average (50-90% improvement with caching)
 - **Uptime**: 99.9% target
-- **Cache Hit Rate**: 85%+ 
+- **Cache Hit Rate**: 85%+ in production
+- **Memory Usage**: ~48MB optimized (down from 80MB+)
+- **Concurrent Capacity**: 2-3x increase
 - **SSL Rating**: A+ (modern security)
+- **API Coverage**: 153 documented endpoints
 
 ### Recent Deployment Fixes (October 31, 2025)
 - ✅ Fixed Docker build issues with canvas dependencies

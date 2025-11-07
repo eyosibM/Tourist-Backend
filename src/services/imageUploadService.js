@@ -92,6 +92,14 @@ class ImageUploadService {
           
           if (req.file) {
             try {
+              console.log('📤 Starting S3 upload for:', req.file.originalname);
+              console.log('S3 Config:', {
+                bucket: process.env.S3_BUCKET_NAME,
+                region: process.env.AWS_REGION || 'us-east-1',
+                hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
+                hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY
+              });
+              
               const fileExtension = path.extname(req.file.originalname);
               const fileName = `${folder}/${Date.now()}-${uuidv4()}${fileExtension}`;
               
@@ -108,6 +116,13 @@ class ImageUploadService {
                 }
               };
 
+              console.log('Upload params:', {
+                bucket: uploadParams.Bucket,
+                key: uploadParams.Key,
+                contentType: uploadParams.ContentType,
+                bufferSize: req.file.buffer.length
+              });
+
               const upload = new Upload({
                 client: s3Client,
                 params: uploadParams
@@ -115,14 +130,22 @@ class ImageUploadService {
 
               const result = await upload.done();
               
+              console.log('✅ S3 upload successful:', result);
+              
               // Add S3 location to file object
               req.file.location = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${fileName}`;
               req.file.key = fileName;
               req.file.bucket = process.env.S3_BUCKET_NAME;
               
             } catch (uploadError) {
-              console.error('S3 upload error:', uploadError);
-              return next(new Error('Failed to upload file to S3'));
+              console.error('❌ S3 upload error:', uploadError);
+              console.error('Error details:', {
+                message: uploadError.message,
+                code: uploadError.code,
+                statusCode: uploadError.statusCode,
+                stack: uploadError.stack
+              });
+              return next(new Error(`Failed to upload file to S3: ${uploadError.message}`));
             }
           }
           

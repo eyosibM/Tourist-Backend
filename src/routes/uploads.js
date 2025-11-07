@@ -8,11 +8,12 @@ const uploadController = require('../controllers/uploadController');
 // Create multer middleware for different upload types
 const profileUploadMiddleware = ImageUploadService.createUploadMiddleware('profile-pictures');
 const tourUploadMiddleware = ImageUploadService.createUploadMiddleware('tour-images');
-const generalUploadMiddleware = ImageUploadService.createUploadMiddleware(
-  'general-uploads', 
-  ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime', 'video/x-msvideo'], 
-  10 * 1024 * 1024 // 10MB for videos
-);
+const generalUploadMiddleware = MediaUploadService.createMediaUploadMiddleware('general-uploads', {
+  allowImages: true,
+  allowVideos: true,
+  maxImageSize: 10 * 1024 * 1024, // 10MB
+  maxVideoSize: 100 * 1024 * 1024 // 100MB
+});
 const mediaUploadMiddleware = MediaUploadService.createMediaUploadMiddleware('tour-media');
 
 /**

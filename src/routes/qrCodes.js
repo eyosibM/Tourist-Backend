@@ -314,4 +314,37 @@ router.delete('/tours/:id',
   qrCodeController.deleteQRCode
 );
 
+/**
+ * @swagger
+ * /api/qr-codes/download:
+ *   get:
+ *     summary: Download QR code image (proxy to avoid CORS)
+ *     tags: [QR Codes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: S3 URL of the QR code
+ *     responses:
+ *       200:
+ *         description: QR code image
+ *         content:
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: QR code not found
+ */
+router.get('/download',
+  authenticate,
+  qrCodeController.downloadQRCode
+);
+
 module.exports = router;
