@@ -66,7 +66,11 @@ connectRedis().then(async client => {
 app.use(helmet());
 app.use(cors({
   origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600 // Cache preflight requests for 10 minutes
 }));
 
 // Rate limiting - Disabled for development, enabled for production
@@ -413,6 +417,9 @@ app.get('/', (req, res) => {
     }
   });
 });
+
+// Handle preflight requests for all API routes
+app.options('/api/*', cors());
 
 // API Routes
 app.use('/api/auth', require('./routes/auth'));
