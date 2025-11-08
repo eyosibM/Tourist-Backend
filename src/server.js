@@ -62,6 +62,9 @@ connectRedis().then(async client => {
   console.log('Server will continue without Redis functionality');
 });
 
+// Trust proxy for nginx reverse proxy
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
