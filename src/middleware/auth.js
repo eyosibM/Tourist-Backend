@@ -139,23 +139,13 @@ const authorize = (...roles) => {
 const requireCompleteProfile = async (req, res, next) => {
   const user = req.user;
   
-  const isProfileComplete = !!(
-    user.first_name && 
-    user.last_name && 
-    user.country && 
-    user.date_of_birth && 
-    user.gender && 
-    user.phone_number
-  );
+  // Only first_name and last_name are required
+  const isProfileComplete = !!(user.first_name && user.last_name);
   
   if (!isProfileComplete) {
     const missingFields = [];
     if (!user.first_name) missingFields.push('first_name');
     if (!user.last_name) missingFields.push('last_name');
-    if (!user.country) missingFields.push('country');
-    if (!user.date_of_birth) missingFields.push('date_of_birth');
-    if (!user.gender) missingFields.push('gender');
-    if (!user.phone_number) missingFields.push('phone_number');
     
     await logSecurityEvent(req, user._id, 'profile_access_denied', {
       reason: 'incomplete_profile',
@@ -164,7 +154,7 @@ const requireCompleteProfile = async (req, res, next) => {
     });
     
     return res.status(400).json({ 
-      error: 'Profile incomplete. Please complete all required profile fields.',
+      error: 'Profile incomplete. Please complete your first and last name.',
       code: 'PROFILE_001',
       details: [`Missing fields: ${missingFields.join(', ')}`],
       missing_fields: missingFields,
