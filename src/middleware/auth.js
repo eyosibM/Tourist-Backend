@@ -139,11 +139,6 @@ const authorize = (...roles) => {
 const requireCompleteProfile = async (req, res, next) => {
   const user = req.user;
   
-  // System admins are exempt from profile completeness check
-  if (user.user_type === 'system_admin') {
-    return next();
-  }
-  
   const isProfileComplete = !!(
     user.first_name && 
     user.last_name && 
