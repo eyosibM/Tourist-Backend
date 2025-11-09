@@ -72,7 +72,13 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   account_locked_until: Date,
-  last_login: Date
+  last_login: Date,
+  
+  // Profile tracking
+  profile_update_count: {
+    type: Number,
+    default: 0
+  }
 
 }, {
   timestamps: { createdAt: 'created_date', updatedAt: 'updated_date' }

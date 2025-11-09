@@ -151,6 +151,9 @@ const updateProfile = async (req, res) => {
 
     console.log('Updating profile for user:', req.user._id, 'with data:', updates); // Debug log
 
+    // Increment profile_update_count
+    updates.$inc = { profile_update_count: 1 };
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
       updates,
@@ -161,7 +164,7 @@ const updateProfile = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('Profile updated successfully for user:', user._id); // Debug log
+    console.log('Profile updated successfully for user:', user._id, 'Update count:', user.profile_update_count); // Debug log
 
     res.json({
       message: 'Profile updated successfully',
