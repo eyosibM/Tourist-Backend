@@ -39,7 +39,11 @@ const schemas = {
     phone_number: Joi.string().max(20).allow('', null).optional(),
     profile_picture: Joi.string().uri().allow(null, ''),
     user_type: Joi.string().valid('system_admin', 'provider_admin', 'tourist'),
-    provider_id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).allow('', null).optional(),
+    provider_id: Joi.alternatives().try(
+      Joi.string().pattern(/^[0-9a-fA-F]{24}$/),
+      Joi.string().allow(''),
+      Joi.allow(null)
+    ).optional(),
     is_active: Joi.boolean().optional()
   }),
 
