@@ -58,6 +58,16 @@ const updateUser = async (req, res) => {
     delete updates.email; // Email cannot be updated
     delete updates.google_id; // Google ID cannot be updated
 
+    // If user is not provider_admin, remove provider_id
+    if (updates.user_type && updates.user_type !== 'provider_admin') {
+      updates.provider_id = null;
+    }
+    
+    // Convert empty string provider_id to null
+    if (updates.provider_id === '' || updates.provider_id === 'null') {
+      updates.provider_id = null;
+    }
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
       updates,
