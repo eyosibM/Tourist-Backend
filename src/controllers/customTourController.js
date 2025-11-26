@@ -123,37 +123,35 @@ const createCustomTour = async (req, res) => {
       tourData.provider_id = req.user.provider_id;
     }
 
-    // Handle blank templates or validate existing template
-    let template = null;
-    const isBlankTemplate = ['blank-public', 'blank-private'].includes(tourData.tour_template_id);
-    
-    if (isBlankTemplate) {
-      // For blank templates, set tour_template_id to null in the database
-      tourData.tour_template_id = null;
-      console.log(`🆕 Creating tour from blank template: ${tourData.tour_template_id}`);
-    } else {
-      // Validate tour template exists and is active
-      template = await TourTemplate.findOne({
-        _id: tourData.tour_template_id,
-        is_active: true
-      });
+    // Validate tour template exists and is active
+    const template = await TourTemplate.findOne({
+      _id: tourData.tour_template_id,
+      is_active: true
+    });
 
-      if (!template) {
-        return res.status(400).json({ error: 'Invalid or inactive tour template' });
+    if (!template) {
+      return res.status(400).json({ error: 'Invalid or inactive tour template' });
+    }
+    console.log(`📋 Creating tour from template: ${template.template_name}`);
+
+    // Use provided join code or generate a unique one if not provided
+    if (!tourData.join_code || tourData.join_code.trim() === '') {
+      let joinCode;
+      let isUnique = false;
+      while (!isUnique) {
+        joinCode = generateJoinCode();
+        const existing = await CustomTour.findOne({ join_code: joinCode });
+        if (!existing) isUnique = true;
       }
-      console.log(`📋 Creating tour from template: ${template.template_name}`);
+      tourData.join_code = joinCode;
+    } else {
+      // Validate uniqueness of provided join code
+      const existing = await CustomTour.findOne({ join_code: tourData.join_code.toUpperCase() });
+      if (existing) {
+        return res.status(400).json({ error: 'Join code already exists. Please choose a different code.' });
+      }
+      tourData.join_code = tourData.join_code.toUpperCase();
     }
-
-    // Generate unique join code
-    let joinCode;
-    let isUnique = false;
-    while (!isUnique) {
-      joinCode = generateJoinCode();
-      const existing = await CustomTour.findOne({ join_code: joinCode });
-      if (!existing) isUnique = true;
-    }
-
-    tourData.join_code = joinCode;
     tourData.created_by = req.user._id;
 
     // Get default max tourists from PaymentConfig
@@ -167,8 +165,8 @@ const createCustomTour = async (req, res) => {
     const tour = new CustomTour(tourData);
     await tour.save();
 
-    // Copy calendar entries from template (only if not a blank template)
-    if (!isBlankTemplate && tourData.tour_template_id) {
+    // Copy calendar entries from template
+    if (tourData.tour_template_id) {
       const templateEntries = await CalendarEntry.find({ 
         tour_template_id: tourData.tour_template_id 
       });

@@ -421,7 +421,7 @@ router.get('/',
  */
 router.get('/selection', 
   authenticate,
-  authorize('system_admin', 'provider_admin'),
+  authorize('system_admin', 'provider_admin', 'tourist'),
   cacheMiddleware({ 
     ttl: 900, // 15 minutes
     prefix: 'activities-selection'
