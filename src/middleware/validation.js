@@ -62,29 +62,29 @@ const schemas = {
 
   // Tour Template schemas
   tourTemplate: Joi.object({
-    template_name: Joi.string().required(),
-    start_date: Joi.date().required(),
-    end_date: Joi.date().required(),
+    template_name: Joi.string(),
+    start_date: Joi.date(),
+    end_date: Joi.date(),
     description: Joi.string().allow(''),
-    is_active: Joi.boolean(),
-    viewAccessibility: Joi.string().valid('public', 'private'),
-    duration_days: Joi.number(),
-    features_image: Joi.string().uri().allow(null, ''),
+    is_active: Joi.boolean().optional(),
+    viewAccessibility: Joi.string().valid('public', 'private').optional(),
+    duration_days: Joi.number().optional(),
+    features_image: Joi.string().uri().allow(null, '').optional(),
     features_media: Joi.object({
       url: Joi.string().uri().allow(null, ''),
       type: Joi.string().valid('image', 'video').allow(null, ''),
       video_id: Joi.string().allow(null, ''),
       duration: Joi.number().allow(null),
       embed_url: Joi.string().uri().allow(null, '')
-    }).allow(null),
-    teaser_images: Joi.array().items(Joi.string().uri()),
-    qr_code_url: Joi.string().uri().allow(null, ''),
-    qr_code_generated_at: Joi.date().allow(null),
+    }).allow(null).optional(),
+    teaser_images: Joi.array().items(Joi.string().uri()).optional(),
+    qr_code_url: Joi.string().uri().allow(null, '').optional(),
+    qr_code_generated_at: Joi.date().allow(null).optional(),
     web_links: Joi.array().items(Joi.object({
       url: Joi.string().uri().required(),
       description: Joi.string().max(24).allow('')
-    })),
-    created_by: Joi.string().pattern(/^[0-9a-fA-F]{24}$/)
+    })).optional(),
+    created_by: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).optional()
   }),
 
   // Custom Tour schemas
