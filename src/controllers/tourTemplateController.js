@@ -104,6 +104,13 @@ const createTourTemplate = async (req, res) => {
 const updateTourTemplate = async (req, res) => {
   try {
     const updates = req.body;
+    
+    // Debug logging
+    console.log('🔍 Tour Template Update Request:', {
+      id: req.params.id,
+      updates: updates,
+      viewAccessibility: updates.viewAccessibility
+    });
 
     // Recalculate duration_days if dates are updated
     if (updates.start_date || updates.end_date) {
@@ -124,12 +131,18 @@ const updateTourTemplate = async (req, res) => {
     if (!template) {
       return res.status(404).json({ error: 'Tour template not found' });
     }
+    
+    console.log('✅ Tour Template Updated:', {
+      id: template._id,
+      viewAccessibility: template.viewAccessibility
+    });
 
     res.json({
       message: 'Tour template updated successfully',
       template
     });
   } catch (error) {
+    console.error('❌ Tour Template Update Error:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: error.message });
     }
