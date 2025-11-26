@@ -435,7 +435,7 @@ const schemas = {
 // Validation middleware factory
 const validate = (schema) => {
   return (req, res, next) => {
-    const { error } = schema.validate(req.body);
+    const { error } = schema.validate(req.body, { stripUnknown: true });
     if (error) {
       const errorDetails = error.details.map(detail => detail.message);
       console.log('❌ Validation error:', errorDetails);
