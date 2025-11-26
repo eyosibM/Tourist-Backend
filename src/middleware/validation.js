@@ -85,7 +85,7 @@ const schemas = {
       description: Joi.string().max(24).allow('')
     })).optional(),
     created_by: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).optional()
-  }),
+  }).unknown(true),
 
   // Custom Tour schemas
   customTour: Joi.object({
