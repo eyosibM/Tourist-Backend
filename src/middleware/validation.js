@@ -67,6 +67,7 @@ const schemas = {
     end_date: Joi.date().required(),
     description: Joi.string().allow(''),
     is_active: Joi.boolean(),
+    viewAccessibility: Joi.string().valid('public', 'private'),
     duration_days: Joi.number(),
     features_image: Joi.string().uri().allow(null, ''),
     features_media: Joi.object({

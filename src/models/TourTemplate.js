@@ -29,6 +29,11 @@ const tourTemplateSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  viewAccessibility: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public'
+  },
   duration_days: Number,
   features_media: {
     url: {
