@@ -24,6 +24,9 @@ const getAllCustomTours = async (req, res) => {
     const { page = 1, limit = 10, search, status, provider_id } = req.query;
     const { skip, limit: limitNum } = paginate(page, limit);
 
+    console.log('🔍 getAllCustomTours called with query params:', req.query);
+    console.log('👤 User type:', req.user.user_type);
+
     // Build query based on user role
     const query = {};
     if (req.user.user_type === 'provider_admin') {
@@ -31,14 +34,19 @@ const getAllCustomTours = async (req, res) => {
     } else if (req.user.user_type === 'tourist') {
       // Check if searching by join_code (for private tours)
       const { join_code } = req.query;
+      console.log('🔑 Join code from query:', join_code);
       if (join_code) {
         // If searching by join_code, allow access to both public and private tours
         query.join_code = join_code.toUpperCase();
+        console.log('✅ Searching by join code:', query.join_code);
       } else {
         // Otherwise, tourists can only see public tours
         query.viewAccessibility = 'public';
+        console.log('👁️ Filtering for public tours only');
       }
     }
+    
+    console.log('📋 Final MongoDB query:', JSON.stringify(query, null, 2));
     
     if (search && !req.query.join_code) {
       query.$or = [
@@ -60,6 +68,15 @@ const getAllCustomTours = async (req, res) => {
       .sort({ created_date: -1 });
 
     const total = await CustomTour.countDocuments(query);
+
+    console.log(`📊 Found ${tours.length} tours matching query`);
+    if (tours.length > 0) {
+      console.log('🎯 Tours found:', tours.map(t => ({
+        name: t.tour_name,
+        join_code: t.join_code,
+        viewAccessibility: t.viewAccessibility
+      })));
+    }
 
     res.json(buildPaginationResponse(tours, total, page, limit));
   } catch (error) {
