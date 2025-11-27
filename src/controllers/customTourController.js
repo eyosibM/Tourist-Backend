@@ -134,6 +134,15 @@ const createCustomTour = async (req, res) => {
     }
     console.log(`📋 Creating tour from template: ${template.template_name}`);
 
+    // Inherit visibility from template's viewAccessibility
+    // If template is public, custom tour is public (visible in Find Tour)
+    // If template is private, custom tour is private (only via join code/invite)
+    if (template.viewAccessibility === 'public') {
+      tourData.visibility = 'public';
+    } else if (template.viewAccessibility === 'private') {
+      tourData.visibility = 'private';
+    }
+
     // Use provided join code or generate a unique one if not provided
     if (!tourData.join_code || tourData.join_code.trim() === '') {
       let joinCode;

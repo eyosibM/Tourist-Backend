@@ -11,12 +11,6 @@ const getAllTourTemplates = async (req, res) => {
     // Build query
     const query = {};
     
-    // Filter by viewAccessibility based on user role
-    // Only provider_admin sees public templates; system_admin and system_provider see all
-    if (req.user && req.user.user_type === 'provider_admin') {
-      query.viewAccessibility = 'public';
-    }
-    
     if (search) {
       query.$or = [
         { template_name: { $regex: search, $options: 'i' } },
