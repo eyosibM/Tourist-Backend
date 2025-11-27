@@ -36,7 +36,7 @@ const getAllCustomTours = async (req, res) => {
         query.join_code = join_code.toUpperCase();
       } else {
         // Otherwise, tourists can only see public tours
-        query.visibility = 'public';
+        query.viewAccessibility = 'public';
       }
     }
     
