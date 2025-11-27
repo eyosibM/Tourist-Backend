@@ -290,19 +290,22 @@ const updateCustomTour = async (req, res) => {
 
     // Validate join_code uniqueness if being updated
     if (updates.join_code && updates.join_code !== currentTour.join_code) {
-      if (currentTour.status === 'published') {
-        return res.status(400).json({ 
-          error: 'Cannot change join code for published tours' 
-        });
-      }
-
+      // Normalize join code to uppercase
+      updates.join_code = updates.join_code.toUpperCase();
+      
+      // Check if the new join code is already in use by another tour
       const existing = await CustomTour.findOne({ 
         join_code: updates.join_code,
         _id: { $ne: tourId }
       });
+      
       if (existing) {
-        return res.status(400).json({ error: 'Join code already exists' });
+        return res.status(400).json({ 
+          error: `Join code "${updates.join_code}" is already in use by another tour. Please choose a different code.` 
+        });
       }
+      
+      console.log(`✅ Join code updated from "${currentTour.join_code}" to "${updates.join_code}" for tour ${tourId}`);
     }
 
     const tour = await CustomTour.findByIdAndUpdate(
