@@ -263,11 +263,20 @@ const updateCustomTour = async (req, res) => {
     const tourId = req.params.id;
     const updates = req.body;
 
+    console.log('🔄 updateCustomTour called:', {
+      tourId,
+      hasJoinCode: !!updates.join_code,
+      joinCodeValue: updates.join_code,
+      updateKeys: Object.keys(updates)
+    });
+
     // Get current tour
     const currentTour = await CustomTour.findById(tourId);
     if (!currentTour) {
       return res.status(404).json({ error: 'Custom tour not found' });
     }
+
+    console.log('📋 Current tour join_code:', currentTour.join_code);
 
     // Check access permissions
     if (!checkProviderAccess(req.user, currentTour)) {
@@ -315,6 +324,8 @@ const updateCustomTour = async (req, res) => {
     )
     .populate('provider_id', 'provider_name')
     .populate('tour_template_id', 'template_name');
+
+    console.log('✅ Tour updated successfully. New join_code:', tour.join_code);
 
     res.json({
       message: 'Custom tour updated successfully',
