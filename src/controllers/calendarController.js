@@ -159,10 +159,20 @@ const updateCalendarEntry = async (req, res) => {
     const entryId = req.params.id;
     const updates = req.body;
 
+    console.log('📥 updateCalendarEntry - Entry ID:', entryId);
+    console.log('📥 updateCalendarEntry - Updates:', JSON.stringify(updates, null, 2));
+
     const currentEntry = await CalendarEntry.findById(entryId);
     if (!currentEntry) {
       return res.status(404).json({ error: 'Calendar entry not found' });
     }
+
+    console.log('📋 updateCalendarEntry - Current entry:', {
+      id: currentEntry._id,
+      tour_template_id: currentEntry.tour_template_id,
+      custom_tour_id: currentEntry.custom_tour_id,
+      activity: currentEntry.activity
+    });
 
     // Check access permissions
     if (currentEntry.custom_tour_id) {
@@ -204,8 +214,13 @@ const updateCalendarEntry = async (req, res) => {
       calendar_entry: entry
     });
   } catch (error) {
+    console.error('❌ updateCalendarEntry - Error:', error);
     if (error.name === 'ValidationError') {
-      return res.status(400).json({ error: error.message });
+      console.error('❌ Validation errors:', error.errors);
+      return res.status(400).json({ 
+        error: error.message,
+        details: error.errors 
+      });
     }
     res.status(500).json({ error: 'Failed to update calendar entry' });
   }
