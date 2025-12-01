@@ -28,11 +28,11 @@ const customTourSchema = new mongoose.Schema({
     required: true
   },
   start_date: {
-    type: Date,
+    type: String, // Store as YYYY-MM-DD string to avoid timezone issues
     required: true
   },
   end_date: {
-    type: Date,
+    type: String, // Store as YYYY-MM-DD string to avoid timezone issues
     required: true
   },
   status: {

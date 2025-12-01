@@ -17,22 +17,17 @@ const tourTemplateSchema = new mongoose.Schema({
     required: true
   },
   start_date: {
-    type: Date,
+    type: String, // Store as YYYY-MM-DD string to avoid timezone issues
     required: true
   },
   end_date: {
-    type: Date,
+    type: String, // Store as YYYY-MM-DD string to avoid timezone issues
     required: true
   },
   description: String,
   is_active: {
     type: Boolean,
     default: true
-  },
-  viewAccessibility: {
-    type: String,
-    enum: ['public', 'private'],
-    default: 'public'
   },
   duration_days: Number,
   features_media: {
@@ -86,7 +81,10 @@ const tourTemplateSchema = new mongoose.Schema({
 // Calculate duration_days automatically
 tourTemplateSchema.pre('save', function (next) {
   if (this.start_date && this.end_date) {
-    const diffTime = Math.abs(this.end_date - this.start_date);
+    // Parse string dates (YYYY-MM-DD format)
+    const start = new Date(this.start_date + 'T00:00:00');
+    const end = new Date(this.end_date + 'T00:00:00');
+    const diffTime = Math.abs(end - start);
     this.duration_days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   }
   next();
