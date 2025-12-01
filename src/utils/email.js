@@ -1,13 +1,31 @@
 const nodemailer = require('nodemailer');
 
+// Log email configuration on startup (for debugging)
+console.log('📧 Email Configuration Check:');
+console.log('  SMTP_HOST:', process.env.SMTP_HOST || '❌ NOT SET');
+console.log('  SMTP_PORT:', process.env.SMTP_PORT || '❌ NOT SET');
+console.log('  SMTP_USER:', process.env.SMTP_USER || '❌ NOT SET');
+console.log('  SMTP_PASS:', process.env.SMTP_PASS ? '✅ SET' : '❌ NOT SET');
+console.log('  FROM_EMAIL:', process.env.FROM_EMAIL || '❌ NOT SET');
+
 // Create transporter
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT || 587,
-  secure: false,
+  port: parseInt(process.env.SMTP_PORT) || 587,
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
+  }
+});
+
+// Verify transporter configuration on startup
+transporter.verify(function (error, success) {
+  if (error) {
+    console.error('❌ Email transporter verification FAILED:', error.message);
+    console.error('   Check your SMTP credentials in .env file');
+  } else {
+    console.log('✅ Email server is ready to send messages');
   }
 });
 
