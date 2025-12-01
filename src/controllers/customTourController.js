@@ -21,7 +21,7 @@ const checkProviderAccess = (user, tour) => {
 // Get all custom tours
 const getAllCustomTours = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, status, provider_id } = req.query;
+    const { page = 1, limit = 10, search, status, provider_id, join_code } = req.query;
     const { skip, limit: limitNum } = paginate(page, limit);
 
     // Build query based on user role
@@ -29,8 +29,16 @@ const getAllCustomTours = async (req, res) => {
     if (req.user.user_type === 'provider_admin') {
       query.provider_id = req.user.provider_id;
     } else if (req.user.user_type === 'tourist') {
-      // Tourists can only see public tours or private tours they have the join code for
-      query.viewAccessibility = 'public';
+      // If searching by join_code, allow private tours to be found
+      if (!join_code) {
+        // Otherwise, tourists can only see public tours
+        query.viewAccessibility = 'public';
+      }
+    }
+    
+    // Handle join_code search (exact match, case-insensitive)
+    if (join_code) {
+      query.join_code = join_code.toUpperCase();
     }
     
     if (search) {
