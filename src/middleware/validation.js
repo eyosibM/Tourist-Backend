@@ -63,6 +63,7 @@ const schemas = {
     description: Joi.string().allow(''),
     is_active: Joi.boolean(),
     duration_days: Joi.number(),
+    visibility: Joi.string().valid('Public', 'Private'),
     features_image: Joi.string().uri().allow(null, ''),
     features_media: Joi.object({
       url: Joi.string().uri().allow(null, ''),
@@ -93,7 +94,7 @@ const schemas = {
     start_date: Joi.date().required(),
     end_date: Joi.date().required(),
     status: Joi.string().valid('draft', 'published', 'completed', 'cancelled'),
-    viewAccessibility: Joi.string().valid('public', 'private'),
+    visibility: Joi.string().valid('Public', 'Private'),
     join_code: Joi.string().max(10),
     max_tourists: Joi.number().min(1),
     group_chat_link: Joi.string().uri().allow(null, ''),
