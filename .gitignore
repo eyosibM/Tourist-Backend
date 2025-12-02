@@ -182,3 +182,19 @@ Desktop.ini
 # Linux
 *~
 node_modules
+
+# Temporary/junk files
+.env.clean
+ershpOneDriveDocumentsTourlicityapi
+tash
+typeof
+del
+main
+push-*.bat
+push-*.ps1
+how*
+*.bat
+
+# Files with special characters or weird names
+*\357\200\242*
+ershp*
