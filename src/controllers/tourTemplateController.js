@@ -125,9 +125,11 @@ const updateTourTemplate = async (req, res) => {
     }
 
     console.log('💾 Updating template with data:', JSON.stringify(updates, null, 2));
+    
+    // Use $set to explicitly set the fields
     const template = await TourTemplate.findByIdAndUpdate(
       req.params.id,
-      updates,
+      { $set: updates },
       { new: true, runValidators: true }
     );
 
