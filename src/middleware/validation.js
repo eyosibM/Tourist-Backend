@@ -39,12 +39,7 @@ const schemas = {
     phone_number: Joi.string().max(20).allow('', null).optional(),
     profile_picture: Joi.string().uri().allow(null, ''),
     user_type: Joi.string().valid('system_admin', 'provider_admin', 'tourist'),
-    provider_id: Joi.alternatives().try(
-      Joi.string().pattern(/^[0-9a-fA-F]{24}$/),
-      Joi.string().allow(''),
-      Joi.allow(null)
-    ).optional(),
-    is_active: Joi.boolean().optional()
+    provider_id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/)
   }),
 
   // Provider schemas
@@ -62,30 +57,29 @@ const schemas = {
 
   // Tour Template schemas
   tourTemplate: Joi.object({
-    template_name: Joi.string(),
-    start_date: Joi.date(),
-    end_date: Joi.date(),
+    template_name: Joi.string().required(),
+    start_date: Joi.date().required(),
+    end_date: Joi.date().required(),
     description: Joi.string().allow(''),
-    is_active: Joi.boolean().optional(),
-    viewAccessibility: Joi.string().valid('public', 'private').optional(),
-    duration_days: Joi.number().optional(),
-    features_image: Joi.string().uri().allow(null, '').optional(),
+    is_active: Joi.boolean(),
+    duration_days: Joi.number(),
+    features_image: Joi.string().uri().allow(null, ''),
     features_media: Joi.object({
       url: Joi.string().uri().allow(null, ''),
       type: Joi.string().valid('image', 'video').allow(null, ''),
       video_id: Joi.string().allow(null, ''),
       duration: Joi.number().allow(null),
       embed_url: Joi.string().uri().allow(null, '')
-    }).allow(null).optional(),
-    teaser_images: Joi.array().items(Joi.string().uri()).optional(),
-    qr_code_url: Joi.string().uri().allow(null, '').optional(),
-    qr_code_generated_at: Joi.date().allow(null).optional(),
+    }).allow(null),
+    teaser_images: Joi.array().items(Joi.string().uri()),
+    qr_code_url: Joi.string().uri().allow(null, ''),
+    qr_code_generated_at: Joi.date().allow(null),
     web_links: Joi.array().items(Joi.object({
       url: Joi.string().uri().required(),
       description: Joi.string().max(24).allow('')
-    })).optional(),
-    created_by: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).optional()
-  }).unknown(true),
+    })),
+    created_by: Joi.string().pattern(/^[0-9a-fA-F]{24}$/)
+  }),
 
   // Custom Tour schemas
   customTour: Joi.object({
@@ -435,7 +429,7 @@ const schemas = {
 // Validation middleware factory
 const validate = (schema) => {
   return (req, res, next) => {
-    const { error } = schema.validate(req.body, { stripUnknown: true });
+    const { error } = schema.validate(req.body);
     if (error) {
       const errorDetails = error.details.map(detail => detail.message);
       console.log('❌ Validation error:', errorDetails);

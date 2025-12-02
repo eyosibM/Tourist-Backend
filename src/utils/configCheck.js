@@ -19,10 +19,10 @@ const requiredEnvVars = {
   // Optional but recommended
   
   // Email (optional)
-  EMAIL_HOST: 'SMTP host for email sending',
-  EMAIL_PORT: 'SMTP port',
-  EMAIL_USER: 'SMTP username',
-  EMAIL_PASS: 'SMTP password',
+  SMTP_HOST: 'SMTP host for email sending',
+  SMTP_PORT: 'SMTP port',
+  SMTP_USER: 'SMTP username',
+  SMTP_PASS: 'SMTP password',
   
   // Payment (optional)
   STRIPE_SECRET_KEY: 'Stripe secret key for payments',
@@ -33,10 +33,10 @@ const requiredEnvVars = {
 };
 
 const optionalEnvVars = [
-  'EMAIL_HOST',
-  'EMAIL_PORT',
-  'EMAIL_USER',
-  'EMAIL_PASS',
+  'SMTP_HOST',
+  'SMTP_PORT',
+  'SMTP_USER',
+  'SMTP_PASS',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET'
 ];
@@ -83,10 +83,10 @@ function checkConfiguration() {
  */
 function getImpactMessage(key) {
   const impacts = {
-    EMAIL_HOST: 'Email notifications will be disabled',
-    EMAIL_PORT: 'Email notifications will be disabled',
-    EMAIL_USER: 'Email notifications will be disabled',
-    EMAIL_PASS: 'Email notifications will be disabled',
+    SMTP_HOST: 'Email notifications will be disabled',
+    SMTP_PORT: 'Email notifications will be disabled',
+    SMTP_USER: 'Email notifications will be disabled',
+    SMTP_PASS: 'Email notifications will be disabled',
     STRIPE_SECRET_KEY: 'Payment processing will be disabled',
     STRIPE_WEBHOOK_SECRET: 'Payment webhooks will not work'
   };
@@ -144,7 +144,7 @@ function validateServiceConfigurations() {
 
     email: {
       name: 'Email Notifications',
-      required: ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS'],
+      required: ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS'],
       status: 'unknown'
     },
     stripe: {
