@@ -10,7 +10,7 @@ const calendarEntrySchema = new mongoose.Schema({
         ref: 'CustomTour'
     },
     entry_date: {
-        type: Date,
+        type: String, // Store as YYYY-MM-DD string to avoid timezone issues
         required: true
     },
     activity: {
