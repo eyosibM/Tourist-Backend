@@ -75,6 +75,9 @@ const getTourTemplateById = async (req, res) => {
 const createTourTemplate = async (req, res) => {
   try {
     const templateData = req.body;
+    console.log('📥 Backend received template data:', JSON.stringify(templateData, null, 2));
+    console.log('📥 Visibility field received:', templateData.visibility);
+    
     templateData.created_by = req.user._id;
 
     // Calculate duration_days
@@ -85,14 +88,18 @@ const createTourTemplate = async (req, res) => {
       );
     }
 
+    console.log('💾 Creating template with data:', JSON.stringify(templateData, null, 2));
     const template = new TourTemplate(templateData);
     await template.save();
+    console.log('✅ Template saved:', JSON.stringify(template, null, 2));
+    console.log('✅ Saved visibility:', template.visibility);
 
     res.status(201).json({
       message: 'Tour template created successfully',
       template
     });
   } catch (error) {
+    console.error('❌ Error creating template:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: error.message });
     }
@@ -104,6 +111,8 @@ const createTourTemplate = async (req, res) => {
 const updateTourTemplate = async (req, res) => {
   try {
     const updates = req.body;
+    console.log('📥 Backend received update data:', JSON.stringify(updates, null, 2));
+    console.log('📥 Visibility field in update:', updates.visibility);
 
     // Recalculate duration_days if dates are updated
     if (updates.start_date || updates.end_date) {
@@ -115,6 +124,7 @@ const updateTourTemplate = async (req, res) => {
       }
     }
 
+    console.log('💾 Updating template with data:', JSON.stringify(updates, null, 2));
     const template = await TourTemplate.findByIdAndUpdate(
       req.params.id,
       updates,
@@ -125,11 +135,15 @@ const updateTourTemplate = async (req, res) => {
       return res.status(404).json({ error: 'Tour template not found' });
     }
 
+    console.log('✅ Template updated:', JSON.stringify(template, null, 2));
+    console.log('✅ Updated visibility:', template.visibility);
+
     res.json({
       message: 'Tour template updated successfully',
       template
     });
   } catch (error) {
+    console.error('❌ Error updating template:', error);
     if (error.name === 'ValidationError') {
       return res.status(400).json({ error: error.message });
     }
