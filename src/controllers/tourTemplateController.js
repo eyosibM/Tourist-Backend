@@ -1,6 +1,7 @@
 const TourTemplate = require('../models/TourTemplate');
 const CalendarEntry = require('../models/CalendarEntry');
 const { paginate, buildPaginationResponse, calculateDurationDays } = require('../utils/helpers');
+const CacheInvalidationStrategies = require('../middleware/cacheInvalidation');
 
 // Get all tour templates
 const getAllTourTemplates = async (req, res) => {
@@ -139,6 +140,9 @@ const updateTourTemplate = async (req, res) => {
 
     console.log('✅ Template updated:', JSON.stringify(template, null, 2));
     console.log('✅ Updated visibility:', template.visibility);
+
+    // Invalidate cache
+    await CacheInvalidationStrategies.invalidateTourCache(req.params.id, 'update');
 
     res.json({
       message: 'Tour template updated successfully',
