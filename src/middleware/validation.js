@@ -82,6 +82,31 @@ const schemas = {
     created_by: Joi.string().pattern(/^[0-9a-fA-F]{24}$/)
   }),
 
+  tourTemplateUpdate: Joi.object({
+    template_name: Joi.string(),
+    start_date: Joi.date(),
+    end_date: Joi.date(),
+    description: Joi.string().allow(''),
+    is_active: Joi.boolean(),
+    duration_days: Joi.number(),
+    visibility: Joi.string().valid('Public', 'Private'),
+    features_image: Joi.string().uri().allow(null, ''),
+    features_media: Joi.object({
+      url: Joi.string().uri().allow(null, ''),
+      type: Joi.string().valid('image', 'video').allow(null, ''),
+      video_id: Joi.string().allow(null, ''),
+      duration: Joi.number().allow(null),
+      embed_url: Joi.string().uri().allow(null, '')
+    }).allow(null),
+    teaser_images: Joi.array().items(Joi.string().uri()),
+    qr_code_url: Joi.string().uri().allow(null, ''),
+    qr_code_generated_at: Joi.date().allow(null),
+    web_links: Joi.array().items(Joi.object({
+      url: Joi.string().uri().required(),
+      description: Joi.string().max(24).allow('')
+    }))
+  }),
+
   // Custom Tour schemas
   customTour: Joi.object({
     provider_id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),

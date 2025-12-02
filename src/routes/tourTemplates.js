@@ -288,7 +288,7 @@ router.post('/',
 router.put('/:id', 
   authenticate,
   authorize('system_admin'),
-  validate(schemas.tourTemplate),
+  validate(schemas.tourTemplateUpdate),
   tourTemplateController.updateTourTemplate
 );
 
