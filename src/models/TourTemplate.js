@@ -25,6 +25,11 @@ const tourTemplateSchema = new mongoose.Schema({
     required: true
   },
   description: String,
+  visibility: {
+    type: String,
+    enum: ['Public', 'Private'],
+    default: 'Public'
+  },
   is_active: {
     type: Boolean,
     default: true
