@@ -1,7 +1,7 @@
 const TourTemplate = require('../models/TourTemplate');
 const CalendarEntry = require('../models/CalendarEntry');
 const { paginate, buildPaginationResponse, calculateDurationDays } = require('../utils/helpers');
-const CacheInvalidationStrategies = require('../middleware/cacheInvalidation');
+const { CacheInvalidationStrategies } = require('../middleware/cacheInvalidation');
 
 // Get all tour templates
 const getAllTourTemplates = async (req, res) => {
