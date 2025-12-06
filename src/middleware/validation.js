@@ -118,27 +118,27 @@ const schemas = {
     tour_name: Joi.string().required(),
     start_date: Joi.date().required(),
     end_date: Joi.date().required(),
-    status: Joi.string().valid('draft', 'published', 'completed', 'cancelled'),
-    visibility: Joi.string().valid('Public', 'Private'),
-    join_code: Joi.string().max(10),
-    max_tourists: Joi.number().min(1),
-    remaining_tourists: Joi.number().min(0),
-    group_chat_link: Joi.string().allow(null, ''),
-    media_url: Joi.string().allow(null, ''),
-    features_image: Joi.string().allow(null, ''),
+    status: Joi.string().valid('draft', 'published', 'completed', 'cancelled').optional(),
+    visibility: Joi.string().valid('Public', 'Private').optional(),
+    join_code: Joi.string().max(10).optional(),
+    max_tourists: Joi.number().min(1).optional(),
+    remaining_tourists: Joi.number().min(0).optional(),
+    group_chat_link: Joi.string().allow(null, '').optional(),
+    media_url: Joi.string().allow(null, '').optional(),
+    features_image: Joi.string().allow(null, '').optional(),
     features_media: Joi.object({
       url: Joi.string().allow(null, ''),
       type: Joi.string().valid('image', 'video').allow(null, ''),
       video_id: Joi.string().allow(null, ''),
       duration: Joi.number().allow(null),
       embed_url: Joi.string().allow(null, '')
-    }).allow(null),
-    teaser_images: Joi.array().items(Joi.string()),
+    }).allow(null).optional(),
+    teaser_images: Joi.array().items(Joi.string()).optional(),
     web_links: Joi.array().items(Joi.object({
       url: Joi.string().allow(null, '').optional(),
       description: Joi.string().max(24).allow('', null).optional()
-    }).unknown(true))
-  }),
+    }).unknown(true)).optional()
+  }).unknown(false),
 
   // Calendar Entry schemas
   calendarEntry: Joi.object({
