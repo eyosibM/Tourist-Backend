@@ -36,8 +36,8 @@ async function migrateVisibilityField() {
             visibility: {
               $cond: {
                 if: { $eq: ['$viewAccessibility', 'public'] },
-                then: 'Public',
-                else: 'Private'
+                then: 'public',
+                else: 'private'
               }
             }
           }

@@ -32,7 +32,7 @@ const getAllCustomTours = async (req, res) => {
       // If searching by join_code, allow private tours to be found
       if (!join_code) {
         // Otherwise, tourists can only see public tours
-        query.visibility = 'Public';
+        query.visibility = 'public';
       }
     }
     
@@ -404,7 +404,7 @@ const searchTourByJoinCode = async (req, res) => {
       tour,
       already_registered: !!existingRegistration,
       registration_status: existingRegistration?.status,
-      access_method: tour.visibility === 'Private' ? 'join_code' : 'public'
+      access_method: tour.visibility === 'private' ? 'join_code' : 'public'
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to search tour' });

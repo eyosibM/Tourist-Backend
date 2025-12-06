@@ -42,8 +42,8 @@ const customTourSchema = new mongoose.Schema({
   },
   visibility: {
     type: String,
-    enum: ['Public', 'Private'],
-    default: 'Private'
+    enum: ['public', 'private'],
+    default: 'private'
   },
   join_code: {
     type: String,

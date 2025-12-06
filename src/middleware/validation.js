@@ -63,7 +63,7 @@ const schemas = {
     description: Joi.string().allow(''),
     is_active: Joi.boolean(),
     duration_days: Joi.number(),
-    visibility: Joi.string().valid('Public', 'Private'),
+    visibility: Joi.string().valid('public', 'private'),
     features_image: Joi.string().uri().allow(null, ''),
     features_media: Joi.object({
       url: Joi.string().uri().allow(null, ''),
@@ -89,7 +89,7 @@ const schemas = {
     description: Joi.string().allow(''),
     is_active: Joi.boolean(),
     duration_days: Joi.number(),
-    visibility: Joi.string().valid('Public', 'Private'),
+    visibility: Joi.string().valid('public', 'private'),
     features_image: Joi.string().allow(null, ''),
     features_media: Joi.object({
       url: Joi.string().allow(null, ''),
@@ -119,7 +119,7 @@ const schemas = {
     start_date: Joi.date().required(),
     end_date: Joi.date().required(),
     status: Joi.string().valid('draft', 'published', 'completed', 'cancelled').optional(),
-    visibility: Joi.string().valid('Public', 'Private').optional(),
+    visibility: Joi.string().valid('public', 'private').optional(),
     join_code: Joi.string().max(10).optional(),
     max_tourists: Joi.number().min(1).optional(),
     remaining_tourists: Joi.number().min(0).optional(),
