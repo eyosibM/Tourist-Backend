@@ -40,10 +40,10 @@ const customTourSchema = new mongoose.Schema({
     enum: ['draft', 'published', 'completed', 'cancelled'],
     default: 'draft'
   },
-  viewAccessibility: {
+  visibility: {
     type: String,
-    enum: ['public', 'private'],
-    default: 'private'
+    enum: ['Public', 'Private'],
+    default: 'Private'
   },
   join_code: {
     type: String,
