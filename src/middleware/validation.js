@@ -124,6 +124,7 @@ const schemas = {
     max_tourists: Joi.number().min(1),
     remaining_tourists: Joi.number().min(0),
     group_chat_link: Joi.string().allow(null, ''),
+    media_url: Joi.string().allow(null, ''),
     features_image: Joi.string().allow(null, ''),
     features_media: Joi.object({
       url: Joi.string().allow(null, ''),
@@ -134,7 +135,7 @@ const schemas = {
     }).allow(null),
     teaser_images: Joi.array().items(Joi.string()),
     web_links: Joi.array().items(Joi.object({
-      url: Joi.string().required(),
+      url: Joi.string().allow(null, ''),
       description: Joi.string().max(24).allow('')
     }))
   }),

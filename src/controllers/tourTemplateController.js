@@ -141,8 +141,12 @@ const updateTourTemplate = async (req, res) => {
     console.log('✅ Template updated:', JSON.stringify(template, null, 2));
     console.log('✅ Updated visibility:', template.visibility);
 
-    // Invalidate cache
-    await CacheInvalidationStrategies.invalidateTourCache(req.params.id, 'update');
+    // Invalidate cache - wrap in try-catch to prevent blocking response
+    try {
+      await CacheInvalidationStrategies.invalidateTourCache(req.params.id, 'update');
+    } catch (cacheError) {
+      console.warn('⚠️ Cache invalidation failed (non-critical):', cacheError.message);
+    }
 
     res.json({
       message: 'Tour template updated successfully',
