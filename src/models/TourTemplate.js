@@ -27,8 +27,12 @@ const tourTemplateSchema = new mongoose.Schema({
   description: String,
   visibility: {
     type: String,
-    enum: ['Public', 'Private'],
-    default: 'Public'
+    enum: ['public', 'private', 'Public', 'Private'], // Accept both cases for backward compatibility
+    default: 'public',
+    set: function(value) {
+      // Automatically convert to lowercase
+      return value ? value.toLowerCase() : 'public';
+    }
   },
   is_active: {
     type: Boolean,
