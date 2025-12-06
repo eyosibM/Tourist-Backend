@@ -187,6 +187,7 @@ const createCustomTour = async (req, res) => {
         activity: entry.activity,
         activity_description: entry.activity_description,
         activity_details: entry.activity_details,
+        features_media: entry.features_media, // Copy media from template
         web_links: entry.web_links,
         start_time: entry.start_time,
         end_time: entry.end_time,
