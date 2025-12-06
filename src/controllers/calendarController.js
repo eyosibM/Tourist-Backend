@@ -193,11 +193,25 @@ const updateCalendarEntry = async (req, res) => {
       }
     }
 
+    // Handle nested features_media update explicitly
+    if (updates.features_media) {
+      console.log('🖼️ Updating features_media:', JSON.stringify(updates.features_media));
+      // Use dot notation for nested updates to ensure they work correctly
+      updates['features_media.url'] = updates.features_media.url;
+      updates['features_media.type'] = updates.features_media.type;
+      if (updates.features_media.duration) {
+        updates['features_media.duration'] = updates.features_media.duration;
+      }
+      delete updates.features_media; // Remove the nested object
+    }
+
     const entry = await CalendarEntry.findByIdAndUpdate(
       entryId,
       updates,
       { new: true, runValidators: true }
     ).populate('created_by', 'first_name last_name');
+    
+    console.log('✅ Updated entry features_media:', JSON.stringify(entry.features_media));
 
     // Create tour update notification if this is for a custom tour
     if (currentEntry.custom_tour_id) {
