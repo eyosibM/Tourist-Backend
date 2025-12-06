@@ -135,9 +135,9 @@ const schemas = {
     }).allow(null),
     teaser_images: Joi.array().items(Joi.string()),
     web_links: Joi.array().items(Joi.object({
-      url: Joi.string().allow(null, ''),
-      description: Joi.string().max(24).allow('')
-    }))
+      url: Joi.string().allow(null, '').optional(),
+      description: Joi.string().max(24).allow('', null).optional()
+    }).unknown(true))
   }),
 
   // Calendar Entry schemas
@@ -462,10 +462,14 @@ const schemas = {
 // Validation middleware factory
 const validate = (schema) => {
   return (req, res, next) => {
-    const { error } = schema.validate(req.body);
+    const { error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
-      const errorDetails = error.details.map(detail => detail.message);
-      console.log('❌ Validation error:', errorDetails);
+      const errorDetails = error.details.map(detail => ({
+        field: detail.path.join('.'),
+        message: detail.message,
+        type: detail.type
+      }));
+      console.log('❌ Validation error:', JSON.stringify(errorDetails, null, 2));
       console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
       return res.status(400).json({
         error: 'Validation error',
