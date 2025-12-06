@@ -122,19 +122,20 @@ const schemas = {
     visibility: Joi.string().valid('Public', 'Private'),
     join_code: Joi.string().max(10),
     max_tourists: Joi.number().min(1),
-    group_chat_link: Joi.string().uri().allow(null, ''),
-    features_image: Joi.string().uri().allow(null, ''),
+    remaining_tourists: Joi.number().min(0),
+    group_chat_link: Joi.string().allow(null, ''),
+    features_image: Joi.string().allow(null, ''),
     features_media: Joi.object({
-      url: Joi.string().uri().allow(null, ''),
+      url: Joi.string().allow(null, ''),
       type: Joi.string().valid('image', 'video').allow(null, ''),
       video_id: Joi.string().allow(null, ''),
       duration: Joi.number().allow(null),
-      embed_url: Joi.string().uri().allow(null, '')
+      embed_url: Joi.string().allow(null, '')
     }).allow(null),
-    teaser_images: Joi.array().items(Joi.string().uri()),
+    teaser_images: Joi.array().items(Joi.string()),
     web_links: Joi.array().items(Joi.object({
-      url: Joi.string().uri().required(),
-      description: Joi.string().max(24)
+      url: Joi.string().required(),
+      description: Joi.string().max(24).allow('')
     }))
   }),
 
@@ -144,12 +145,17 @@ const schemas = {
     custom_tour_id: Joi.string().pattern(/^[0-9a-fA-F]{24}$/),
     entry_date: Joi.date().required(),
     activity: Joi.string().required(),
-    activity_description: Joi.string(),
-    activity_details: Joi.string(),
-    featured_image: Joi.string().uri().allow(null, ''),
-    web_links: Joi.array().items(Joi.string().uri()),
-    start_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
-    end_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    activity_description: Joi.string().allow(''),
+    activity_details: Joi.string().allow(''),
+    features_media: Joi.object({
+      url: Joi.string().allow(null, ''),
+      type: Joi.string().valid('image', 'video').allow(null, ''),
+      duration: Joi.number().allow(null)
+    }).allow(null),
+    featured_image: Joi.string().allow(null, ''),
+    web_links: Joi.array().items(Joi.string()),
+    start_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).allow(''),
+    end_time: Joi.string().pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).allow('')
   }),
 
   // Registration schemas
