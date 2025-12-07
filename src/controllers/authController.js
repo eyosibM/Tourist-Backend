@@ -191,30 +191,14 @@ const updateProfile = async (req, res) => {
 
 // Helper function to determine redirect URL based on user type
 const getRedirectUrl = (user) => {
-  // Check if profile is incomplete (additional fields beyond Google-provided data)
-  const isProfileComplete = !!(
-    user.first_name && 
-    user.last_name && 
-    user.country && 
-    user.date_of_birth && 
-    user.gender && 
-    user.phone_number
-  );
-  
-  if (!isProfileComplete) {
-    console.log('Profile incomplete, redirecting to /profile'); // Debug log
-    console.log('Missing fields:', {
-      first_name: !!user.first_name,
-      last_name: !!user.last_name,
-      country: !!user.country,
-      date_of_birth: !!user.date_of_birth,
-      gender: !!user.gender,
-      phone_number: !!user.phone_number
-    });
+  // Check if this is the user's first login (profile_update_count === 0)
+  // This ensures users land on the profile page on first login to review/update their info
+  if (user.profile_update_count === 0) {
+    console.log('First login detected (profile_update_count: 0), redirecting to /profile');
     return '/profile';
   }
 
-  console.log('Profile complete, redirecting based on user type:', user.user_type); // Debug log
+  console.log('Returning user (profile_update_count:', user.profile_update_count + '), redirecting based on user type:', user.user_type);
   
   switch (user.user_type) {
     case 'system_admin':
