@@ -241,11 +241,16 @@ const updateCustomTour = async (req, res) => {
     const tourId = req.params.id;
     const updates = req.body;
 
+    console.log('🔄 updateCustomTour - Tour ID:', tourId);
+    console.log('🔄 updateCustomTour - Updates:', JSON.stringify(updates, null, 2));
+
     // Get current tour
     const currentTour = await CustomTour.findById(tourId);
     if (!currentTour) {
       return res.status(404).json({ error: 'Custom tour not found' });
     }
+
+    console.log('📋 updateCustomTour - Current tour join_code:', currentTour.join_code);
 
     // Check access permissions
     if (!checkProviderAccess(req.user, currentTour)) {
@@ -267,19 +272,26 @@ const updateCustomTour = async (req, res) => {
     }
 
     // Validate join_code uniqueness if being updated
-    if (updates.join_code && updates.join_code !== currentTour.join_code) {
-      if (currentTour.status === 'published') {
-        return res.status(400).json({ 
-          error: 'Cannot change join code for published tours' 
-        });
-      }
+    if (updates.join_code) {
+      // Only validate if the join code is actually changing
+      if (updates.join_code !== currentTour.join_code) {
+        console.log(`🔄 Join code changing from ${currentTour.join_code} to ${updates.join_code}`);
+        
+        if (currentTour.status === 'published') {
+          return res.status(400).json({ 
+            error: 'Cannot change join code for published tours' 
+          });
+        }
 
-      const existing = await CustomTour.findOne({ 
-        join_code: updates.join_code,
-        _id: { $ne: tourId }
-      });
-      if (existing) {
-        return res.status(400).json({ error: 'Join code already exists' });
+        const existing = await CustomTour.findOne({ 
+          join_code: updates.join_code,
+          _id: { $ne: tourId }
+        });
+        if (existing) {
+          return res.status(400).json({ error: 'Join code already exists' });
+        }
+      } else {
+        console.log(`✅ Join code unchanged: ${updates.join_code}`);
       }
     }
 
