@@ -277,12 +277,7 @@ const updateCustomTour = async (req, res) => {
       if (updates.join_code !== currentTour.join_code) {
         console.log(`🔄 Join code changing from ${currentTour.join_code} to ${updates.join_code}`);
         
-        if (currentTour.status === 'published') {
-          return res.status(400).json({ 
-            error: 'Cannot change join code for published tours' 
-          });
-        }
-
+        // Check for duplicate join codes
         const existing = await CustomTour.findOne({ 
           join_code: updates.join_code,
           _id: { $ne: tourId }
@@ -290,6 +285,8 @@ const updateCustomTour = async (req, res) => {
         if (existing) {
           return res.status(400).json({ error: 'Join code already exists' });
         }
+        
+        console.log(`✅ Join code update allowed for provider admin`);
       } else {
         console.log(`✅ Join code unchanged: ${updates.join_code}`);
       }
