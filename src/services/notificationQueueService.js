@@ -96,19 +96,32 @@ class NotificationQueueService {
       const { to, subject, html, template, templateData } = job.data;
       
       try {
-        let emailContent;
-        
         if (template && templateData) {
-          // Use email template
+          // Use email template with sendEmail function
           if (emailTemplates[template]) {
-            emailContent = emailTemplates[template](...templateData);
-            await sendEmail(to, emailContent.subject, emailContent.html);
+            await sendEmail(to, template, ...templateData);
           } else {
             throw new Error(`Email template '${template}' not found`);
           }
         } else {
-          // Use direct content
-          await sendEmail(to, subject, html);
+          // Use direct content - need to send via transporter directly
+          const nodemailer = require('nodemailer');
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS
+            }
+          });
+          
+          await transporter.sendMail({
+            from: process.env.FROM_EMAIL || 'noreply@tourlicity.com',
+            to,
+            subject,
+            html
+          });
         }
         
         console.log(`Email sent successfully to ${to}`);
@@ -192,21 +205,35 @@ class NotificationQueueService {
       try {
         const promises = recipients.map(async (recipient) => {
           try {
-            let emailContent;
-            
             if (template && templateData) {
               if (emailTemplates[template]) {
                 // Pass recipient-specific data if available
                 const recipientData = Array.isArray(templateData) 
                   ? templateData 
                   : templateData[recipient] || templateData;
-                emailContent = emailTemplates[template](...recipientData);
-                await sendEmail(recipient, emailContent.subject, emailContent.html);
+                await sendEmail(recipient, template, ...recipientData);
               } else {
                 throw new Error(`Email template '${template}' not found`);
               }
             } else {
-              await sendEmail(recipient, subject, html);
+              // Use direct content - need to send via transporter directly
+              const nodemailer = require('nodemailer');
+              const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                secure: process.env.SMTP_SECURE === 'true',
+                auth: {
+                  user: process.env.SMTP_USER,
+                  pass: process.env.SMTP_PASS
+                }
+              });
+              
+              await transporter.sendMail({
+                from: process.env.FROM_EMAIL || 'noreply@tourlicity.com',
+                to: recipient,
+                subject,
+                html
+              });
             }
             
             return { success: true, recipient };
