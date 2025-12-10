@@ -12,7 +12,12 @@ const generalUploadMiddleware = MediaUploadService.createMediaUploadMiddleware('
   allowImages: true,
   allowVideos: true,
   maxImageSize: 10 * 1024 * 1024, // 10MB
-  maxVideoSize: 100 * 1024 * 1024 // 100MB
+  maxVideoSize: 100 * 1024 * 1024, // 100MB
+  imageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  videoTypes: ['video/mp4', 'video/mov', 'video/avi', 'video/quicktime', 'video/webm'],
+  // Allow additional document types for general uploads
+  allowDocuments: true,
+  documentTypes: ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 });
 const mediaUploadMiddleware = MediaUploadService.createMediaUploadMiddleware('tour-media');
 

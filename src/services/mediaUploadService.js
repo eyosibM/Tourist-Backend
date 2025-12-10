@@ -14,15 +14,19 @@ class MediaUploadService {
         const {
             allowImages = true,
             allowVideos = true,
+            allowDocuments = false,
             maxImageSize = 5 * 1024 * 1024, // 5MB
             maxVideoSize = 100 * 1024 * 1024, // 100MB
+            maxDocumentSize = 10 * 1024 * 1024, // 10MB
             imageTypes = ['image/jpeg', 'image/png', 'image/gif'],
-            videoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm']
+            videoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm'],
+            documentTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
         } = options;
 
         const allowedTypes = [];
         if (allowImages) allowedTypes.push(...imageTypes);
         if (allowVideos) allowedTypes.push(...videoTypes);
+        if (allowDocuments) allowedTypes.push(...documentTypes);
 
         const upload = multer({
             storage: multer.memoryStorage(),
@@ -34,7 +38,7 @@ class MediaUploadService {
                 }
             },
             limits: {
-                fileSize: Math.max(maxImageSize, maxVideoSize)
+                fileSize: Math.max(maxImageSize, maxVideoSize, maxDocumentSize || 0)
             }
         });
 
@@ -52,15 +56,19 @@ class MediaUploadService {
         try {
             const { title, description, folder = 'media' } = metadata;
 
-            // Determine if file is image or video
+            // Determine if file is image, video, or document
             const isImage = file.mimetype.startsWith('image/');
             const isVideo = file.mimetype.startsWith('video/');
+            const isDocument = file.mimetype.startsWith('application/') || file.mimetype.startsWith('text/');
 
             if (isImage) {
                 return await this.uploadImage(file, { title, description, folder });
             } else if (isVideo) {
                 // Upload video to S3
                 return await this.uploadVideoToS3(file, { title, description, folder });
+            } else if (isDocument) {
+                // Upload document to S3
+                return await this.uploadDocumentToS3(file, { title, description, folder });
             } else {
                 throw new Error('Unsupported file type');
             }
@@ -142,6 +150,40 @@ class MediaUploadService {
             };
         } catch (error) {
             console.error('Video S3 upload error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Upload document to S3
+     * @param {Object} file - Multer file object
+     * @param {Object} metadata - Document metadata
+     * @returns {Promise<Object>} - Upload result
+     */
+    static async uploadDocumentToS3(file, metadata = {}) {
+        try {
+            const { title, description, folder = 'documents' } = metadata;
+
+            // Upload document file to S3
+            const documentUrl = await ImageUploadService.uploadImageBuffer(
+                file.buffer,
+                file.originalname,
+                folder,
+                file.mimetype
+            );
+
+            return {
+                success: true,
+                type: 'document',
+                url: documentUrl,
+                title: title || file.originalname,
+                description: description || '',
+                size: file.size,
+                mimeType: file.mimetype,
+                uploadedAt: new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('Document S3 upload error:', error);
             throw error;
         }
     }
