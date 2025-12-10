@@ -152,13 +152,27 @@ const createCustomTour = async (req, res) => {
       console.log(`📋 Creating tour from template: ${template.template_name}`);
     }
 
-    // Generate unique join code
-    let joinCode;
-    let isUnique = false;
-    while (!isUnique) {
-      joinCode = generateJoinCode();
+    // Use provided join code or generate a unique one
+    let joinCode = tourData.join_code;
+    
+    if (!joinCode || joinCode.trim() === '') {
+      // Generate unique join code if none provided
+      let isUnique = false;
+      while (!isUnique) {
+        joinCode = generateJoinCode();
+        const existing = await CustomTour.findOne({ join_code: joinCode });
+        if (!existing) isUnique = true;
+      }
+      console.log(`🎲 Generated join code: ${joinCode}`);
+    } else {
+      // Validate that the provided join code is unique
       const existing = await CustomTour.findOne({ join_code: joinCode });
-      if (!existing) isUnique = true;
+      if (existing) {
+        return res.status(400).json({ 
+          error: `Join code "${joinCode}" is already in use. Please choose a different one.` 
+        });
+      }
+      console.log(`✏️ Using custom join code: ${joinCode}`);
     }
 
     tourData.join_code = joinCode;
