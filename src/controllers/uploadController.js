@@ -109,8 +109,16 @@ const uploadGeneralFile = async (req, res) => {
 
     console.log(`Processing ${req.file.mimetype} upload: ${req.file.originalname} (${req.file.size} bytes)`);
 
-    // Validate file before processing
-    const validation = MediaUploadService.validateMediaFile(req.file);
+    // Validate file before processing with updated file types
+    const validation = MediaUploadService.validateMediaFile(req.file, {
+      allowImages: true,
+      allowVideos: true,
+      allowDocuments: true,
+      maxImageSize: 10 * 1024 * 1024, // 10MB
+      maxVideoSize: 100 * 1024 * 1024, // 100MB
+      imageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      videoTypes: ['video/mp4', 'video/mov', 'video/avi', 'video/quicktime', 'video/webm']
+    });
     if (!validation.isValid) {
       return res.status(400).json({ 
         error: 'File validation failed', 
@@ -196,8 +204,15 @@ const uploadTourMedia = async (req, res) => {
 
     console.log(`Processing ${req.file.mimetype} upload: ${req.file.originalname} (${req.file.size} bytes)`);
 
-    // Validate file before processing
-    const validation = MediaUploadService.validateMediaFile(req.file);
+    // Validate file before processing with updated file types
+    const validation = MediaUploadService.validateMediaFile(req.file, {
+      allowImages: true,
+      allowVideos: true,
+      maxImageSize: 5 * 1024 * 1024, // 5MB
+      maxVideoSize: 100 * 1024 * 1024, // 100MB
+      imageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      videoTypes: ['video/mp4', 'video/mov', 'video/avi', 'video/quicktime', 'video/webm']
+    });
     if (!validation.isValid) {
       return res.status(400).json({ 
         error: 'File validation failed', 

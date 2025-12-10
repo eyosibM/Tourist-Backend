@@ -23,7 +23,7 @@ class ImageUploadService {
    * @param {number} maxSize - Maximum file size in bytes
    * @returns {Object} - Multer middleware
    */
-  static createUploadMiddleware(folder = 'images', allowedTypes = ['image/jpeg', 'image/png'], maxSize = 5 * 1024 * 1024) {
+  static createUploadMiddleware(folder = 'images', allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'], maxSize = 5 * 1024 * 1024) {
     // Check if S3 is configured
     if (!process.env.S3_BUCKET_NAME || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
       console.log('S3 not configured, using local storage for file uploads');
@@ -315,7 +315,7 @@ class ImageUploadService {
    * @returns {Object} - Validation result
    */
   static validateImage(file) {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     const errors = [];

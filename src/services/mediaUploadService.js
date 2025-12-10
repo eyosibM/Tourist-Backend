@@ -18,7 +18,7 @@ class MediaUploadService {
             maxImageSize = 5 * 1024 * 1024, // 5MB
             maxVideoSize = 100 * 1024 * 1024, // 100MB
             maxDocumentSize = 10 * 1024 * 1024, // 10MB
-            imageTypes = ['image/jpeg', 'image/png', 'image/gif'],
+            imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
             videoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm'],
             documentTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
         } = options;
@@ -282,27 +282,35 @@ class MediaUploadService {
         const {
             allowImages = true,
             allowVideos = true,
+            allowDocuments = false,
             maxImageSize = 5 * 1024 * 1024, // 5MB
             maxVideoSize = 100 * 1024 * 1024, // 100MB
-            imageTypes = ['image/jpeg', 'image/png', 'image/gif'],
-            videoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm']
+            maxDocumentSize = 10 * 1024 * 1024, // 10MB
+            imageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+            videoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm'],
+            documentTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
         } = options;
 
         const errors = [];
         const isImage = file.mimetype.startsWith('image/');
         const isVideo = file.mimetype.startsWith('video/');
+        const isDocument = file.mimetype.startsWith('application/') || file.mimetype.startsWith('text/');
 
         // Check file type
         if (isImage && !allowImages) {
             errors.push('Image uploads are not allowed');
         } else if (isVideo && !allowVideos) {
             errors.push('Video uploads are not allowed');
+        } else if (isDocument && !allowDocuments) {
+            errors.push('Document uploads are not allowed');
         } else if (isImage && !imageTypes.includes(file.mimetype)) {
             errors.push(`Invalid image type. Allowed types: ${imageTypes.join(', ')}`);
         } else if (isVideo && !videoTypes.includes(file.mimetype)) {
             errors.push(`Invalid video type. Allowed types: ${videoTypes.join(', ')}`);
-        } else if (!isImage && !isVideo) {
-            errors.push('File must be an image or video');
+        } else if (isDocument && !documentTypes.includes(file.mimetype)) {
+            errors.push(`Invalid document type. Allowed types: ${documentTypes.join(', ')}`);
+        } else if (!isImage && !isVideo && !isDocument) {
+            errors.push('File must be an image, video, or document');
         }
 
         // Check file size
@@ -310,12 +318,14 @@ class MediaUploadService {
             errors.push(`Image too large. Maximum size: ${maxImageSize / (1024 * 1024)}MB`);
         } else if (isVideo && file.size > maxVideoSize) {
             errors.push(`Video too large. Maximum size: ${maxVideoSize / (1024 * 1024)}MB`);
+        } else if (isDocument && file.size > maxDocumentSize) {
+            errors.push(`Document too large. Maximum size: ${maxDocumentSize / (1024 * 1024)}MB`);
         }
 
         return {
             isValid: errors.length === 0,
             errors,
-            type: isImage ? 'image' : isVideo ? 'video' : 'unknown'
+            type: isImage ? 'image' : isVideo ? 'video' : isDocument ? 'document' : 'unknown'
         };
     }
 }
