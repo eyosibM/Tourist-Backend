@@ -92,22 +92,12 @@ const uploadMultipleTourImages = async (req, res) => {
 // Upload general file
 const uploadGeneralFile = async (req, res) => {
   try {
-    console.log('📤 General file upload request received');
-    console.log('File:', req.file ? {
-      fieldname: req.file.fieldname,
-      originalname: req.file.originalname,
-      mimetype: req.file.mimetype,
-      size: req.file.size
-    } : 'No file');
-    
     if (!req.file) {
       console.error('❌ No file provided in request');
       return res.status(400).json({ error: 'No file provided' });
     }
 
     const { category = 'other' } = req.body;
-
-    console.log(`Processing ${req.file.mimetype} upload: ${req.file.originalname} (${req.file.size} bytes)`);
 
     // Validate file before processing with updated file types
     const validation = MediaUploadService.validateMediaFile(req.file, {
@@ -136,7 +126,7 @@ const uploadGeneralFile = async (req, res) => {
       }
     );
 
-    console.log(`✅ Upload successful: ${uploadResult.type} - ${uploadResult.url}`);
+
 
     res.json({
       message: 'File uploaded successfully',
@@ -202,7 +192,7 @@ const uploadTourMedia = async (req, res) => {
 
     const { title, description, media_type = 'features' } = req.body;
 
-    console.log(`Processing ${req.file.mimetype} upload: ${req.file.originalname} (${req.file.size} bytes)`);
+
 
     // Validate file before processing with updated file types
     const validation = MediaUploadService.validateMediaFile(req.file, {
@@ -230,7 +220,7 @@ const uploadTourMedia = async (req, res) => {
       }
     );
 
-    console.log(`Upload successful: ${uploadResult.type} - ${uploadResult.url}`);
+
 
     res.json({
       message: `Tour ${uploadResult.type} uploaded successfully to S3`,
