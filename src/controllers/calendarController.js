@@ -194,15 +194,42 @@ const updateCalendarEntry = async (req, res) => {
     }
 
     // Handle nested features_media update explicitly
-    let updateOptions = { new: true, runValidators: true };
-    
     if (updates.hasOwnProperty('features_media')) {
       if (updates.features_media === null) {
-        // User wants to delete the media - use $unset to remove the entire features_media object
+        // User wants to delete the media - use direct MongoDB operation to avoid validation
         console.log('🗑️ Deleting features_media');
-        updates.$unset = { features_media: 1 };
-        // Disable validation when unsetting to avoid enum validation errors
-        updateOptions.runValidators = false;
+        
+        try {
+          // Use direct MongoDB operation to unset the field without validation
+          await CalendarEntry.collection.updateOne(
+            { _id: currentEntry._id },
+            { $unset: { features_media: 1 } }
+          );
+          
+          // Fetch the updated entry
+          const entry = await CalendarEntry.findById(entryId)
+            .populate('created_by', 'first_name last_name');
+          
+          console.log('✅ Successfully deleted features_media');
+          
+          // Create tour update notification if this is for a custom tour
+          if (currentEntry.custom_tour_id) {
+            await createTourUpdate(
+              currentEntry.custom_tour_id,
+              'calendar_entry',
+              `Updated activity: ${entry.activity}`,
+              req.user._id
+            );
+          }
+
+          return res.json({
+            message: 'Calendar entry updated successfully',
+            calendar_entry: entry
+          });
+        } catch (error) {
+          console.error('❌ Error deleting features_media:', error);
+          return res.status(500).json({ error: 'Failed to delete media' });
+        }
       } else if (updates.features_media) {
         console.log('🖼️ Updating features_media:', JSON.stringify(updates.features_media));
         // Use dot notation for nested updates to ensure they work correctly
@@ -220,7 +247,7 @@ const updateCalendarEntry = async (req, res) => {
     const entry = await CalendarEntry.findByIdAndUpdate(
       entryId,
       updates,
-      updateOptions
+      { new: true, runValidators: true }
     ).populate('created_by', 'first_name last_name');
     
     console.log('✅ Updated entry features_media:', JSON.stringify(entry.features_media));
