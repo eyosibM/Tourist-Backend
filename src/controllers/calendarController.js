@@ -196,11 +196,9 @@ const updateCalendarEntry = async (req, res) => {
     // Handle nested features_media update explicitly
     if (updates.hasOwnProperty('features_media')) {
       if (updates.features_media === null) {
-        // User wants to delete the media
+        // User wants to delete the media - use $unset to remove the entire features_media object
         console.log('🗑️ Deleting features_media');
-        updates['features_media.url'] = null;
-        updates['features_media.type'] = null;
-        updates['features_media.duration'] = null;
+        updates.$unset = { features_media: 1 };
       } else if (updates.features_media) {
         console.log('🖼️ Updating features_media:', JSON.stringify(updates.features_media));
         // Use dot notation for nested updates to ensure they work correctly
