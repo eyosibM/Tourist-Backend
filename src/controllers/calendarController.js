@@ -194,11 +194,15 @@ const updateCalendarEntry = async (req, res) => {
     }
 
     // Handle nested features_media update explicitly
+    let updateOptions = { new: true, runValidators: true };
+    
     if (updates.hasOwnProperty('features_media')) {
       if (updates.features_media === null) {
         // User wants to delete the media - use $unset to remove the entire features_media object
         console.log('🗑️ Deleting features_media');
         updates.$unset = { features_media: 1 };
+        // Disable validation when unsetting to avoid enum validation errors
+        updateOptions.runValidators = false;
       } else if (updates.features_media) {
         console.log('🖼️ Updating features_media:', JSON.stringify(updates.features_media));
         // Use dot notation for nested updates to ensure they work correctly
@@ -216,7 +220,7 @@ const updateCalendarEntry = async (req, res) => {
     const entry = await CalendarEntry.findByIdAndUpdate(
       entryId,
       updates,
-      { new: true, runValidators: true }
+      updateOptions
     ).populate('created_by', 'first_name last_name');
     
     console.log('✅ Updated entry features_media:', JSON.stringify(entry.features_media));
