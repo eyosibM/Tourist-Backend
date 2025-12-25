@@ -194,13 +194,23 @@ const updateCalendarEntry = async (req, res) => {
     }
 
     // Handle nested features_media update explicitly
-    if (updates.features_media) {
-      console.log('🖼️ Updating features_media:', JSON.stringify(updates.features_media));
-      // Use dot notation for nested updates to ensure they work correctly
-      updates['features_media.url'] = updates.features_media.url;
-      updates['features_media.type'] = updates.features_media.type;
-      if (updates.features_media.duration) {
-        updates['features_media.duration'] = updates.features_media.duration;
+    if (updates.hasOwnProperty('features_media')) {
+      if (updates.features_media === null) {
+        // User wants to delete the media
+        console.log('🗑️ Deleting features_media');
+        updates['features_media.url'] = null;
+        updates['features_media.type'] = null;
+        updates['features_media.duration'] = null;
+      } else if (updates.features_media) {
+        console.log('🖼️ Updating features_media:', JSON.stringify(updates.features_media));
+        // Use dot notation for nested updates to ensure they work correctly
+        updates['features_media.url'] = updates.features_media.url;
+        updates['features_media.type'] = updates.features_media.type;
+        if (updates.features_media.duration) {
+          updates['features_media.duration'] = updates.features_media.duration;
+        } else {
+          updates['features_media.duration'] = null;
+        }
       }
       delete updates.features_media; // Remove the nested object
     }
