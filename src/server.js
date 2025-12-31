@@ -462,14 +462,54 @@ app.get('/api/test-no-auth', (req, res) => {
   });
 });
 
+// Test endpoint for app content debugging
+app.get('/api/test-app-content', async (req, res) => {
+  try {
+    const PaymentConfig = require('./models/PaymentConfig');
+    const config = await PaymentConfig.findOne({ config_key: 'default' });
+    
+    res.json({
+      message: 'App content test endpoint',
+      timestamp: new Date().toISOString(),
+      configFound: !!config,
+      configData: config ? {
+        id: config._id,
+        config_key: config.config_key,
+        product_overview: config.product_overview || 'EMPTY',
+        mission_statement: config.mission_statement || 'EMPTY',
+        vision: config.vision || 'EMPTY',
+        created_date: config.created_date,
+        updated_date: config.updated_date
+      } : null
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Test failed',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Public endpoint for application content (About Us page)
 app.get('/api/public/app-content', async (req, res) => {
   try {
     const PaymentConfig = require('./models/PaymentConfig');
     const config = await PaymentConfig.findOne({ config_key: 'default' });
     
+    console.log('Public app-content endpoint called');
+    console.log('Found config:', config ? 'Yes' : 'No');
+    if (config) {
+      console.log('Config content fields:', {
+        product_overview: config.product_overview ? 'Present' : 'Missing',
+        mission_statement: config.mission_statement ? 'Present' : 'Missing',
+        vision: config.vision ? 'Present' : 'Missing'
+      });
+    }
+    
     if (!config) {
       // Return default content if no config exists
+      console.log('Returning default content - no config found');
       return res.json({
         product_overview: "Tourlicity is a comprehensive platform that connects tour companies and event planners with their customers, providing a structured system for managing complex tours and events from planning to execution. The platform enables providers to create custom tours and events from standardized or blank templates and allows customers to access detailed itineraries, upload documents, and collaborate throughout their journey.",
         mission_statement: "To enable a seamless, coercive, and collaborative experience between tour providers, event planners and customers.",
@@ -477,11 +517,14 @@ app.get('/api/public/app-content', async (req, res) => {
       });
     }
     
-    res.json({
+    const responseData = {
       product_overview: config.product_overview || "Tourlicity is a comprehensive platform that connects tour companies and event planners with their customers, providing a structured system for managing complex tours and events from planning to execution. The platform enables providers to create custom tours and events from standardized or blank templates and allows customers to access detailed itineraries, upload documents, and collaborate throughout their journey.",
       mission_statement: config.mission_statement || "To enable a seamless, coercive, and collaborative experience between tour providers, event planners and customers.",
       vision: config.vision || "Self-servicing tours and events that deliver the right information to the right person(s) at the right time."
-    });
+    };
+    
+    console.log('Returning config content:', responseData);
+    res.json(responseData);
   } catch (error) {
     console.error('Error fetching app content:', error);
     res.status(500).json({ error: 'Failed to fetch application content' });
