@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticate, authorize } = require('../middleware/auth');
+const PaymentConfig = require('../models/PaymentConfig');
 
 /**
  * @swagger
@@ -11,14 +12,20 @@ const { authenticate, authorize } = require('../middleware/auth');
  *       properties:
  *         id:
  *           type: string
- *         provider_id:
- *           type: string
+ *         charge_per_tourist:
+ *           type: number
+ *         default_max_tourists:
+ *           type: number
+ *         max_provider_admins:
+ *           type: number
  *         config_key:
  *           type: string
- *         config_value:
+ *         product_overview:
  *           type: string
- *         is_active:
- *           type: boolean
+ *         mission_statement:
+ *           type: string
+ *         vision:
+ *           type: string
  *         created_date:
  *           type: string
  *           format: date-time
@@ -34,15 +41,10 @@ const { authenticate, authorize } = require('../middleware/auth');
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: provider_id
+ *         name: config_key
  *         schema:
  *           type: string
- *         description: Filter by provider ID
- *       - in: query
- *         name: is_active
- *         schema:
- *           type: boolean
- *         description: Filter by active status
+ *         description: Filter by config key
  *     responses:
  *       200:
  *         description: List of payment configurations
@@ -53,50 +55,16 @@ const { authenticate, authorize } = require('../middleware/auth');
  *               items:
  *                 $ref: '#/components/schemas/PaymentConfig'
  */
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, authorize('system_admin'), async (req, res) => {
   try {
-    // For now, return empty array as payment configs are not yet implemented
-    res.json([]);
+    const { config_key } = req.query;
+    const query = config_key ? { config_key } : {};
+    
+    const configs = await PaymentConfig.find(query);
+    res.json(configs);
   } catch (error) {
     console.error('Error fetching payment configs:', error);
     res.status(500).json({ error: 'Failed to fetch payment configurations' });
-  }
-});
-
-/**
- * @swagger
- * /api/payment-configs/provider/{providerId}:
- *   get:
- *     summary: Get payment configuration for a specific provider
- *     tags: [Payment Configs]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: providerId
- *         required: true
- *         schema:
- *           type: string
- *         description: Provider ID
- *     responses:
- *       200:
- *         description: Payment configuration for the provider
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/PaymentConfig'
- *       404:
- *         description: Payment configuration not found
- */
-router.get('/provider/:providerId', authenticate, async (req, res) => {
-  try {
-    const { providerId } = req.params;
-    
-    // For now, return 404 as payment configs are not yet implemented
-    res.status(404).json({ error: 'Payment configuration not found' });
-  } catch (error) {
-    console.error('Error fetching provider payment config:', error);
-    res.status(500).json({ error: 'Failed to fetch payment configuration' });
   }
 });
 
@@ -125,12 +93,16 @@ router.get('/provider/:providerId', authenticate, async (req, res) => {
  *       404:
  *         description: Payment configuration not found
  */
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', authenticate, authorize('system_admin'), async (req, res) => {
   try {
     const { id } = req.params;
+    const config = await PaymentConfig.findById(id);
     
-    // For now, return 404 as payment configs are not yet implemented
-    res.status(404).json({ error: 'Payment configuration not found' });
+    if (!config) {
+      return res.status(404).json({ error: 'Payment configuration not found' });
+    }
+    
+    res.json(config);
   } catch (error) {
     console.error('Error fetching payment config:', error);
     res.status(500).json({ error: 'Failed to fetch payment configuration' });
@@ -152,25 +124,40 @@ router.get('/:id', authenticate, async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               provider_id:
- *                 type: string
+ *               charge_per_tourist:
+ *                 type: number
+ *               default_max_tourists:
+ *                 type: number
+ *               max_provider_admins:
+ *                 type: number
  *               config_key:
  *                 type: string
- *               config_value:
+ *               product_overview:
+ *                 type: string
+ *               mission_statement:
+ *                 type: string
+ *               vision:
  *                 type: string
  *     responses:
  *       201:
  *         description: Payment configuration created successfully
  */
-router.post('/', authenticate, authorize('system_admin', 'provider_admin'), async (req, res) => {
+router.post('/', authenticate, authorize('system_admin'), async (req, res) => {
   try {
-    // For now, return a placeholder response
-    res.status(201).json({ 
-      message: 'Payment configuration feature not yet implemented',
-      id: 'placeholder'
-    });
+    const configData = {
+      ...req.body,
+      created_by: req.user._id
+    };
+    
+    const config = new PaymentConfig(configData);
+    await config.save();
+    
+    res.status(201).json(config);
   } catch (error) {
     console.error('Error creating payment config:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Configuration with this key already exists' });
+    }
     res.status(500).json({ error: 'Failed to create payment configuration' });
   }
 });
@@ -197,21 +184,38 @@ router.post('/', authenticate, authorize('system_admin', 'provider_admin'), asyn
  *           schema:
  *             type: object
  *             properties:
- *               config_value:
+ *               charge_per_tourist:
+ *                 type: number
+ *               default_max_tourists:
+ *                 type: number
+ *               max_provider_admins:
+ *                 type: number
+ *               product_overview:
  *                 type: string
- *               is_active:
- *                 type: boolean
+ *               mission_statement:
+ *                 type: string
+ *               vision:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Payment configuration updated successfully
  */
-router.put('/:id', authenticate, authorize('system_admin', 'provider_admin'), async (req, res) => {
+router.put('/:id', authenticate, authorize('system_admin'), async (req, res) => {
   try {
-    // For now, return a placeholder response
-    res.json({ 
-      message: 'Payment configuration feature not yet implemented',
-      id: req.params.id
-    });
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    const config = await PaymentConfig.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+    
+    if (!config) {
+      return res.status(404).json({ error: 'Payment configuration not found' });
+    }
+    
+    res.json(config);
   } catch (error) {
     console.error('Error updating payment config:', error);
     res.status(500).json({ error: 'Failed to update payment configuration' });
@@ -237,9 +241,15 @@ router.put('/:id', authenticate, authorize('system_admin', 'provider_admin'), as
  *       200:
  *         description: Payment configuration deleted successfully
  */
-router.delete('/:id', authenticate, authorize('system_admin', 'provider_admin'), async (req, res) => {
+router.delete('/:id', authenticate, authorize('system_admin'), async (req, res) => {
   try {
-    // For now, return a placeholder response
+    const { id } = req.params;
+    const config = await PaymentConfig.findByIdAndDelete(id);
+    
+    if (!config) {
+      return res.status(404).json({ error: 'Payment configuration not found' });
+    }
+    
     res.json({ message: 'Payment configuration deleted successfully' });
   } catch (error) {
     console.error('Error deleting payment config:', error);
