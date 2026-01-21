@@ -173,7 +173,7 @@ const checkProviderOwnership = async (req, res, next) => {
 
     if (req.user.user_type === 'provider_admin') {
       // Check if the resource belongs to the user's provider
-      const providerId = req.params.providerId || req.body.provider_id;
+      const providerId = req.params.providerId || req.params.id || req.body.provider_id;
       if (providerId && providerId !== req.user.provider_id?.toString()) {
         await logSecurityEvent(req, req.user._id, 'provider_access_denied', {
           reason: 'different_provider',
