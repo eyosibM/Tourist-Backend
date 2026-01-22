@@ -462,6 +462,9 @@ const schemas = {
 // Validation middleware factory
 const validate = (schema) => {
   return (req, res, next) => {
+    console.log('🔍 VALIDATION DEBUG - Starting validation for:', req.method, req.path);
+    console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+    
     const { error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
       const errorDetails = error.details.map(detail => ({
@@ -476,6 +479,8 @@ const validate = (schema) => {
         details: errorDetails
       });
     }
+    
+    console.log('✅ VALIDATION DEBUG - Validation passed, calling next()');
     next();
   };
 };

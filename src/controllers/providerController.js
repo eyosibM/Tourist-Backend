@@ -198,14 +198,31 @@ const getActiveProviders = async (req, res) => {
 // Update provider
 const updateProvider = async (req, res) => {
   try {
+    console.log('🔍 CONTROLLER DEBUG - updateProvider called');
+    console.log('📦 User:', {
+      user_type: req.user.user_type,
+      provider_id: req.user.provider_id?._id?.toString() || req.user.provider_id?.toString(),
+      user_id: req.user._id
+    });
+    console.log('📦 Request params:', req.params);
+    console.log('📦 Request body:', req.body);
+    
     const providerId = req.params.id;
     const updates = req.body;
 
-    // Check access permissions
-    if (req.user.user_type === 'provider_admin' && 
-        req.user.provider_id?.toString() !== providerId) {
-      return res.status(403).json({ error: 'Access denied' });
+    // Check access permissions (fixed to use proper provider ID extraction)
+    if (req.user.user_type === 'provider_admin') {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      if (userProviderId !== providerId) {
+        console.log('❌ CONTROLLER DEBUG - Access denied:', {
+          userProviderId,
+          requestedProviderId: providerId
+        });
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
+
+    console.log('✅ CONTROLLER DEBUG - Permission check passed');
 
     // Don't allow updating provider_code
     delete updates.provider_code;
@@ -217,14 +234,17 @@ const updateProvider = async (req, res) => {
     );
 
     if (!provider) {
+      console.log('❌ CONTROLLER DEBUG - Provider not found');
       return res.status(404).json({ error: 'Provider not found' });
     }
 
+    console.log('✅ CONTROLLER DEBUG - Provider updated successfully');
     res.json({
       message: 'Provider updated successfully',
       provider
     });
   } catch (error) {
+    console.log('❌ CONTROLLER DEBUG - Error:', error);
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       return res.status(400).json({ error: `${field} already exists` });
