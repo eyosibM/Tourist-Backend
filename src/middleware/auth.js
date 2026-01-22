@@ -29,9 +29,17 @@ const logSecurityEvent = async (req, userId, eventType, metadata = {}) => {
 // Middleware to verify JWT token
 const authenticate = async (req, res, next) => {
   try {
+    console.log('🔍 AUTHENTICATE DEBUG - Starting authentication check:', {
+      endpoint: req.path,
+      method: req.method,
+      hasAuthHeader: !!req.header('Authorization'),
+      authHeaderStart: req.header('Authorization')?.substring(0, 20) + '...'
+    });
+
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
+      console.log('❌ AUTHENTICATE DEBUG - No token provided');
       // Log security event for missing token
       await logSecurityEvent(req, null, 'authentication_failed', {
         reason: 'missing_token',
@@ -45,9 +53,20 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('🔍 AUTHENTICATE DEBUG - Token decoded:', {
+      userId: decoded.userId,
+      tokenExp: new Date(decoded.exp * 1000),
+      currentTime: new Date()
+    });
+
     const user = await User.findById(decoded.userId).populate('provider_id');
     
     if (!user || !user.is_active) {
+      console.log('❌ AUTHENTICATE DEBUG - User not found or inactive:', {
+        userId: decoded.userId,
+        userExists: !!user,
+        isActive: user?.is_active
+      });
       // Log security event for invalid token
       await logSecurityEvent(req, decoded.userId, 'authentication_failed', {
         reason: user ? 'inactive_user' : 'invalid_user',
@@ -62,6 +81,12 @@ const authenticate = async (req, res, next) => {
 
     // Check email verification for email/password users
     if (!user.google_id && !user.email_verified) {
+      console.log('❌ AUTHENTICATE DEBUG - Email not verified:', {
+        userId: user._id,
+        email: user.email,
+        hasGoogleId: !!user.google_id,
+        emailVerified: user.email_verified
+      });
       // Log security event for unverified email
       await logSecurityEvent(req, user._id, 'authentication_failed', {
         reason: 'email_not_verified',
@@ -77,6 +102,16 @@ const authenticate = async (req, res, next) => {
       });
     }
 
+    console.log('✅ AUTHENTICATE DEBUG - User authenticated successfully:', {
+      userId: user._id,
+      userType: user.user_type,
+      hasProviderId: !!user.provider_id,
+      providerIdType: typeof user.provider_id,
+      providerIdValue: user.provider_id?._id?.toString() || user.provider_id?.toString(),
+      isActive: user.is_active,
+      emailVerified: user.email_verified
+    });
+
     // Log successful authentication
     await logSecurityEvent(req, user._id, 'authentication_success', {
       endpoint: req.path,
@@ -84,8 +119,10 @@ const authenticate = async (req, res, next) => {
     });
 
     req.user = user;
+    console.log('✅ AUTHENTICATE DEBUG - Authentication complete, calling next()');
     next();
   } catch (error) {
+    console.log('❌ AUTHENTICATE DEBUG - Error:', error.message);
     // Log security event for token verification error
     await logSecurityEvent(req, null, 'authentication_failed', {
       reason: 'invalid_token',
