@@ -221,18 +221,43 @@ const requireCompleteProfile = async (req, res, next) => {
 // Middleware to check provider ownership
 const checkProviderOwnership = async (req, res, next) => {
   try {
+    console.log('🔍 CHECKPROVIDEROWNERSHIP DEBUG - Starting provider ownership check:', {
+      endpoint: req.path,
+      method: req.method,
+      userType: req.user?.user_type,
+      userId: req.user?._id
+    });
+
     if (req.user.user_type === 'system_admin') {
+      console.log('✅ CHECKPROVIDEROWNERSHIP DEBUG - System admin access granted');
       return next(); // System admins can access everything
     }
 
     if (req.user.user_type === 'provider_admin') {
       // Check if the resource belongs to the user's provider
       const providerId = req.params.providerId || req.params.id || req.body.provider_id;
-      if (providerId && providerId !== req.user.provider_id?.toString()) {
+      const userProviderId = req.user.provider_id?._id?.toString() || req.user.provider_id?.toString();
+      
+      console.log('🔍 DEBUG - Provider ownership check:', {
+        requestedProviderId: providerId,
+        userProviderId: userProviderId,
+        userType: req.user.user_type,
+        endpoint: req.path,
+        method: req.method,
+        providerIdType: typeof req.user.provider_id,
+        providerIdStructure: req.user.provider_id
+      });
+
+      if (providerId && providerId !== userProviderId) {
+        console.log('❌ CHECKPROVIDEROWNERSHIP DEBUG - Access denied - different provider:', {
+          requestedProviderId: providerId,
+          userProviderId: userProviderId
+        });
+        
         await logSecurityEvent(req, req.user._id, 'provider_access_denied', {
           reason: 'different_provider',
           requested_provider: providerId,
-          user_provider: req.user.provider_id?.toString(),
+          user_provider: userProviderId,
           endpoint: req.path
         });
         
@@ -242,10 +267,14 @@ const checkProviderOwnership = async (req, res, next) => {
           details: ['You can only access resources belonging to your provider']
         });
       }
+      
+      console.log('✅ CHECKPROVIDEROWNERSHIP DEBUG - Provider ownership check passed');
     }
 
+    console.log('✅ CHECKPROVIDEROWNERSHIP DEBUG - Calling next()');
     next();
   } catch (error) {
+    console.log('❌ CHECKPROVIDEROWNERSHIP DEBUG - Error:', error.message);
     await logSecurityEvent(req, req.user?._id, 'provider_check_error', {
       error: error.message,
       endpoint: req.path
