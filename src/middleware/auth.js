@@ -103,7 +103,17 @@ const authenticate = async (req, res, next) => {
 // Middleware to check user roles
 const authorize = (...roles) => {
   return async (req, res, next) => {
+    console.log('🔍 AUTHORIZE DEBUG - Starting authorization check:', {
+      endpoint: req.path,
+      method: req.method,
+      requiredRoles: roles,
+      userExists: !!req.user,
+      userType: req.user?.user_type,
+      userId: req.user?._id
+    });
+
     if (!req.user) {
+      console.log('❌ AUTHORIZE DEBUG - User not authenticated');
       await logSecurityEvent(req, null, 'authorization_failed', {
         reason: 'user_not_authenticated',
         endpoint: req.path,
@@ -117,6 +127,12 @@ const authorize = (...roles) => {
     }
 
     if (!roles.includes(req.user.user_type)) {
+      console.log('❌ AUTHORIZE DEBUG - Insufficient permissions:', {
+        userRole: req.user.user_type,
+        requiredRoles: roles,
+        roleMatch: roles.includes(req.user.user_type)
+      });
+      
       await logSecurityEvent(req, req.user._id, 'authorization_failed', {
         reason: 'insufficient_permissions',
         endpoint: req.path,
@@ -131,6 +147,7 @@ const authorize = (...roles) => {
       });
     }
 
+    console.log('✅ AUTHORIZE DEBUG - Authorization passed, calling next()');
     next();
   };
 };
